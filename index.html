@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXI Repostería - Sistema de Gestión y Costeo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div id="status-banner" class="japandi-banner basico">
+        <div class="banner-content">
+            <svg class="cloud-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
+            <span id="banner-message"><strong>Plan Esencial</strong> • Sincronizado en NexiCloud</span>
+        </div>
+    </div>
+
+    <header class="header animate-fade-in" style="position: relative; text-align: center; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div class="logo" style="margin-bottom: 4px;">COTIZADOR INTEGRAL</div>
+        
+        <div style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%; max-width: 360px; margin: 0 auto;">
+            <h1 class="main-title" style="margin: 0; text-align: center; width: 100%;">NEXI <span>Pastelería</span></h1>
+            
+            <!-- Corrección: Se remueve el display:flex del inline style para evitar conflictos con la clase .hidden -->
+            <button type="button" id="btn-ayuda-usuario" class="hidden" style="position: absolute; right: 0; background: none; border: none; padding: 4px; color: #7A7265; cursor: pointer; justify-content: center; align-items: center; transition: color 0.2s ease;" title="Guía de Ayuda">
+                <i data-lucide="info" style="width: 20px; height: 20px; stroke-width: 1.75;"></i>
+            </button>
+        </div>
+        
+        <p class="subtitle" style="margin-top: 6px;">Precisión en tus costos para potenciar tu arte.</p>
+    </header>
+
+    <main class="app-container">
+        
+        <section id="auth-container" class="card animate-fade-in" style="max-width: 450px; margin: 0 auto 30px auto;">
+            <div class="card-header" style="justify-content: center; text-align: center;">
+                <div>
+                    <h2 class="section-title" id="auth-title">Iniciar Sesión</h2>
+                    <p class="section-desc" id="auth-desc">Gestiona los costos de tu negocio.</p>
+                </div>
+            </div>
+
+            <form id="form-auth" style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group hidden" id="group-auth-nombre">
+                    <label for="auth-nombre">Nombre del Taller / Repostero</label>
+                    <input type="text" id="auth-nombre" placeholder="Nombre de tu negocio." autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="auth-email">Correo Electrónico</label>
+                    <input type="email" id="auth-email" placeholder="repostero@ejemplo.com" required autocomplete="email">
+                </div>
+
+                <div class="form-group" style="position: relative;">
+                    <label for="auth-password">Contraseña</label>
+                    <div class="password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password" style="padding-right: 44px; width: 100%;">
+                        <button type="button" id="btn-toggle-password" class="btn-icon-password" style="position: absolute; right: 12px; background: none; border: none; padding: 6px; color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: color 0.2s ease; z-index: 2;" title="Mostrar/Ocultar contraseña">
+                            <i data-lucide="eye" style="width: 18px; height: 18px; stroke-width: 1.75;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="group-auth-medidor" class="hidden" style="margin-top: 5px; margin-bottom: 15px; text-align: left;">
+                    <span id="texto-fuerza" style="font-size: 11px; color: #666; font-weight: 600;">Fuerza: Vacía</span>
+                    <div style="width: 100%; height: 6px; background-color: #EAE6DF; border-radius: 3px; margin-top: 4px; overflow: hidden;">
+                        <div id="barra-fuerza-progreso" style="width: 0%; height: 100%; background-color: #999; transition: width 0.3s ease, background-color 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <div id="group-auth-confirmar" class="hidden" style="margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; color: #7A7265; font-weight: bold;">Confirma Contraseña</label>
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" id="auth-confirm-password" placeholder="••••••••" style="width: 100%; padding: 10px 40px 10px 10px; border-radius: 8px; border: 1px solid #EAE6DF; box-sizing: border-box; font-size: 15px; background-color: #FDFCFA;">
+                        <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #7A7265; padding: 0; display: flex; align-items: center;">
+                            <i data-lucide="eye" style="width: 18px; height: 18px;" id="icono-ojo-confirmar"></i>
+                        </button>
+                    </div>
+                    <span id="feedback-confirmacion" style="font-size: 11px; font-weight: 600; margin-top: 2px; height: 14px; display: block;"></span>
+                </div>
+
+                <button type="submit" id="btn-auth-submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    Ingresar
+                </button>
+
+                <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 10px;">
+                    <span id="auth-switch-text">¿No tienes una cuenta?</span>
+                    <!-- Corrección: Cambiado a botón estilizado para evitar recargas accidentales con href="#" -->
+                    <button type="button" id="btn-auth-switch" style="background: none; border: none; padding: 0; color: var(--accent-color); font-weight: 600; text-decoration: none; margin-left: 5px; cursor: pointer; font-size: 13px;">Regístrate aquí</button>
+                </p>
+            </form>
+        </section>
+
+        <section id="seccion-almacen" class="card animate-fade-in hidden" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <span class="step-badge">01</span>
+                <div>
+                    <h2 class="section-title">Almacén Integral</h2>
+                    <p class="section-desc">Control y registro de ingredientes.</p>
+                </div>
+            </div>
+
+            <div class="tabs-container">
+                <button type="button" class="tab-button active" id="tab-insumos">Insumos</button>
+                <button type="button" class="tab-button" id="tab-consumibles">Consumibles</button>
+            </div>
+
+            <form id="form-insumo" class="grid-form">
+                <div class="form-group" style="flex: 2;">
+                    <label for="insumo-nombre">Nombre</label>
+                    <input type="text" id="insumo-nombre" placeholder="Ej. Harina (Insumo), Cajas (Consumible), Etc." required autocomplete="off">
+                </div>
+                <div class="form-group" id="wrapper-marca" style="flex: 1.2;">
+                    <label for="insumo-marca">Marca</label>
+                    <input type="text" id="insumo-marca" placeholder="Ej. Tres Estrellas" autocomplete="off">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="insumo-precio">Precio ($)</label>
+                    <input type="number" id="insumo-precio" placeholder="0.00" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="insumo-cantidad">Cantidad</label>
+                    <input type="number" id="insumo-cantidad" placeholder="Ej. 1000" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group" style="flex: 1.2;">
+                    <label for="insumo-unidad">Unidad</label>
+                    <select id="insumo-unidad" required>
+                        <option value="gr">Gramos (gr)</option>
+                        <option value="kilo">Kilos (kg)</option>
+                        <option value="litro">Litros (L)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="pieza">Pieza (pza)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                    Registrar
+                </button>
+            </form>
+
+            <div class="filter-divider"></div>
+            
+            <div class="search-container">
+                <label for="search-input" style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Buscador de artículos</label>
+                <div class="search-wrapper">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input id="search-input" type="text" placeholder="Nombre del Artículo..." autocomplete="off">
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 12px; margin-bottom: 15px;">
+                <button id="btn-voz-almacen" type="button" style="background-color: #6D675B; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                    <!-- Corrección: Consistencia visual usando el icono de Lucide para el micrófono -->
+                    <i data-lucide="mic" id="icono-microfono" style="width: 16px; height: 16px;"></i> 
+                    <span id="texto-btn-voz">Dictar Insumo</span>
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="tabla-insumos">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Artículo</th>
+                            <th style="width: 15%;">Paquete</th>
+                            <th style="width: 15%;">Base</th>
+                            <th style="width: 20%;" class="text-center">Rendimiento</th>
+                            <th style="width: 15%; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container">
+                <button type="button" class="btn-pag" id="btn-pag-prev" disabled aria-label="Página anterior">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <span class="pag-info" id="pag-info-texto">1 de 1</span>
+                <button type="button" class="btn-pag" id="btn-pag-next" disabled aria-label="Página siguiente">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <section id="seccion-recetas" class="card animate-fade-in hidden" style="animation-delay: 0.2s;">
+            <div class="card-header">
+                <span class="step-badge badge-dark">02</span>
+                <div>
+                    <h2 class="section-title">Composición de la Receta</h2>
+                    <p class="section-desc">Asigna las proporciones de tu pastel.</p>
+                </div>
+            </div>
+
+            <div class="tabs-container">
+                <button type="button" class="tab-button active" id="tab-receta-insumos">Insumos Receta</button>
+                <button type="button" class="tab-button" id="tab-receta-consumibles">Consumibles Receta</button>
+            </div>
+            
+            <button type="button" id="btn-voz-receta" class="btn" style="background-color: #7c7267; color: #ffffff; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    🎙️ Dictar a la Receta
+</button>
+
+        
+            <form id="form-receta" class="grid-form">
+                <div class="form-group buscador-insumo-container" style="flex: 3; position: relative;">
+                    <label for="inputBuscarInsumo" style="font-size: 12px; color: #8A857C; display: block; margin-bottom: 4px;">Elemento</label>
+                    
+                    <input type="text" id="inputBuscarInsumo" placeholder="Escribe para buscar..." 
+                           style="width: 100%; padding: 10px; border: 1px solid #D1C9BD; border-radius: 8px; font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                    
+                    <div id="listaResultadosInsumos" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #FFF; border: 1px solid #D1C9BD; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0px 4px 10px rgba(0,0,0,0.05); margin-top: 4px;">
+                    </div>
+
+                    <!-- Corrección: Se quitó el atributo 'required' porque el select oculto (display: none) rompe el submit en navegadores modernos -->
+                    <select id="receta-insumo" style="display: none;">
+                        <option value="" disabled selected>Selecciona un elemento...</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 1.5;">
+                    <label for="receta-cantidad">Cantidad a Utilizar</label>
+                    <input type="number" id="receta-cantidad" placeholder="Ej. 250" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="height: 42px; display: inline-flex; align-items: center; justify-content: center;">
+                    Agregar
+                </button>
+            </form>
+
+            <div class="filter-divider"></div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary" id="btn-guardar-almacen" style="flex: 1; min-width: 120px; font-size: 11px; letter-spacing: 0.5px; background-color: var(--accent-color);">
+                    Guardar Receta
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-cargar-almacen" style="flex: 1; min-width: 120px; font-size: 11px; letter-spacing: 0.5px; background-color: #7A7265;">
+                    Cargar Sub-Receta
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-vaciar-almacen" style="flex: 1; min-width: 120px; font-size: 11px; letter-spacing: 0.5px; background-color: #A83E34;">
+                    Limpiar Ficha
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="tabla-receta">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Elemento</th>
+                            <th style="width: 25%;">Porción</th>
+                            <th style="width: 20%;">Costo</th>
+                            <th style="width: 10%; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container" style="margin-bottom: 20px;">
+                <button type="button" class="btn-pag" id="btn-pag-receta-prev" disabled aria-label="Página anterior">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <span class="pag-info" id="pag-info-receta-texto">1 de 1</span>
+                <button type="button" class="btn-pag" id="btn-pag-receta-next" disabled aria-label="Página siguiente">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+
+            <div id="costo-total-produccion-container" class="costo-produccion-container" style="font-family: system-ui, -apple-system, sans-serif;">
+                <span class="costo-produccion-label" style="color: #6D675B;">Costo Total de Producción:</span>
+                <span class="costo-produccion-value" style="font-weight: 700; color: #2C2A27;">
+                    <span id="total-produccion">$0.00</span> 
+                </span>
+            </div>
+        </section>
+
+        <section id="seccion-proyeccion" class="card card-premium animate-fade-in hidden" style="position: relative; overflow: hidden; animation-delay: 0.3s; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div id="bloqueo-premium-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(244, 241, 234, 0.85); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; z-index: 20; text-align: center; transition: all 0.3s ease;">
+                <div style="background-color: #ffffff; border: 1px solid #EAE6E1; border-radius: 12px; padding: 24px; max-width: 290px; box-shadow: 0 4px 20px rgba(122, 114, 101, 0.12);">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🔒</div>
+                    <h3 style="color: #2C2A27; font-size: 15px; font-weight: 700; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Función Premium</h3>
+                    <p style="color: #6D675B; font-size: 12.5px; line-height: 1.5; margin: 0 0 16px 0;">La proyección comercial automatizada requiere una cuenta activa con Plan Premium.</p>
+                    <button type="button" class="btn btn-primary" style="width: 100%; padding: 10px 0; font-size: 13px;" 
+                        onclick="Swal.fire({
+                            title: '¡Potencia tu Negocio!',
+                            text: 'Para actualizar tu plan, ponte en contacto con nuestro soporte técnico a través de WhatsApp.',
+                            icon: 'info',
+                            iconColor: '#606C38',
+                            showCancelButton: true,
+                            confirmButtonText: '💬 Contactar con Soporte',
+                            cancelButtonText: 'Regresar',
+                            confirmButtonColor: '#606C38',
+                            cancelButtonColor: '#7A7265',
+                            customClass: { popup: 'popup-japandi-alert' }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const mensajeUrl = encodeURIComponent('¡Hola equipo NEXI! 👋 Actualmente tengo el Plan Esencial y me encantaría aumentar mi suscripción al Plan Premium para aprovechar todas las herramientas de gestión y el módulo avanzado de costeo. ¿Me apoyan con el proceso?');
+                                window.open('https://wa.me/522291915418?text=' + mensajeUrl, '_blank');
+                            }
+                        })">
+                        Mejorar Suscripción
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-header">
+                <span class="step-badge">03</span>
+                <div>
+                    <h2 class="section-title">Proyección Comercial</h2>
+                    <p class="section-desc" style="color: #6D675B;">Visualiza el desglose estratégico de costos operativos.</p>
+                </div>
+            </div>
+
+            <button type="button" id="btn-configurar-proyeccion" class="btn btn-primary" style="background-color: #FDFCFA; border: 1px dashed #7A7265; color: #2C2A27; margin-bottom: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                <i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
+                Configurar Parámetros Comerciales
+            </button>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <div class="result-box highlighted" style="background-color: #ffffff; border: 1px solid #7A7265; border-left: 5px solid #2C2A27; border-radius: 12px; padding: 20px; text-align: center; width: 100%; box-sizing: border-box;">
+                    <div class="result-label" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #7A7265; font-weight: 600; margin-bottom: 6px;">Precio Sugerido Pastel</div>
+                    <div class="result-value" id="res-precio-sugerido" style="font-family: system-ui, -apple-system, sans-serif; font-size: 36px; font-weight: 800; color: #2C2A27; letter-spacing: -0.5px; line-height: 1;">$0.00</div>
+                </div>
+
+                <div class="result-box" style="background-color: #FDFCFA; border: 1px solid #EAE6E1; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
+                    <div class="result-label" style="font-size: 11px; text-transform: uppercase; font-weight: 600; color: #7A7265; letter-spacing: 0.5px; margin: 0;">Costos Indirectos (MO + Envío)</div>
+                    <div class="result-value" id="res-costos-indirectos" style="font-family: system-ui, -apple-system, sans-serif; font-size: 15px; font-weight: 700; color: #2C2A27; margin: 0;">$0.00</div>
+                </div>
+
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <div class="result-box" style="flex: 1; background-color: #FDFCFA; border: 1px solid #EAE6E1; border-radius: 8px; padding: 10px 12px; box-sizing: border-box; text-align: left;">
+                        <div class="result-label" style="font-size: 10px; text-transform: uppercase; font-weight: 600; color: #7A7265; display: block; margin-bottom: 4px;">Costo Rebanada</div>
+                        <div class="result-value" id="res-costo-rebanada" style="font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 700; color: #2C2A27;">$0.00</div>
+                    </div>
+
+                    <div class="result-box highlighted-accent" style="flex: 1; background-color: #FDFCFA; border: 1px solid #EAE6E1; border-radius: 8px; padding: 10px 12px; box-sizing: border-box; text-align: left;">
+                        <div class="result-label" style="font-size: 10px; text-transform: uppercase; font-weight: 600; color: #7A7265; display: block; margin-bottom: 4px;">PVP Mín. Rebanada</div>
+                        <div class="result-value" id="res-pvp-rebanada" style="font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 700; color: #2C2A27;">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="btn-finalizar" style="width: 100%;">Finalizar Ficha Técnica</button>
+            <div class="success-message" id="mensaje-exito">
+                ✓ Memorias de cálculo sincronizadas correctamente en almacenamiento local.
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer animate-fade-in" style="animation-delay: 0.4s;">
+        &copy; 2026 NEXI Systems. Sistema de Gestión y Costeo de Alta Fidelidad.
+        <button type="button" id="btn-cerrar-sesion" style="background-color: #FAF9F6; border: 1px solid #DCD4C4; color: #7A7265; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;">
+            <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+            <span>Cerrar Sesión</span>
+        </button>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
