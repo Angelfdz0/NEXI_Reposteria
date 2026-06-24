@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `
     };
 
-    // =========================================================================
+    // =================================================================********
     // INSTANCIA DE SUPABASE CON LOCALSTORAGE EXPLÍCITO Y COORDENADAS DE FLUJO
-    // =========================================================================
+    // =================================================================********
     const supabase = window.supabase ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
         auth: {
             persistSession: true,
@@ -228,8 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         timer: 2500,
                         showConfirmButton: false
                     });
-                    // Aquí no llamamos a controlarInterfazUsuario directamente, 
-                    // dejamos que onAuthStateChange intercepte el inicio de sesión de forma limpia.
                 }
             }
         });
@@ -266,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // ESCUCHADOR GLOBAL DE AUTENTICACIÓN (SÚPER FUENTE DE VERDAD)
+    // ESCUCHADOR GLOBAL DE AUTENTICACIÓN
     // ==========================================
     if (supabase) {
         supabase.auth.onAuthStateChange(async (event, session) => {
@@ -277,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 usuarioActual = session.user;
                 if (banner) banner.classList.remove('hidden');
                 
-                // Descargamos datos automáticamente al recuperar o iniciar sesión
                 await descargarDatosNube();
                 controlarInterfazUsuario(session.user);
                 
@@ -306,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 controlarInterfazUsuario(null);
             }
             
-            // Garantizar visibilidad del layout
             document.body.style.display = 'block';
         });
     }
@@ -409,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnFinalizar = document.getElementById('btn-finalizar');
     const mensajeExito = document.getElementById('mensaje-exito');
     const btnConfigurarProyeccion = document.getElementById('btn-configurar-proyeccion');
+    const btnVozRecetaElement = document.getElementById('btn-voz-receta');
     const btnAyudaUsuario = document.getElementById('btn-ayuda-usuario');
     const btnTogglePassword = document.getElementById('btn-toggle-password');
 
@@ -459,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
                 listaResultados.style.display = 'block';
             } else {
-                listaResultados.innerHTML = `<div style="padding: 12px; color: #8A857C; font-size: 12.5px; text-align: center;">No se encontraron coincidencias</div>`;
+                listaResultados.innerHTML = `<div style="padding: 12px; color: #8A857C; font-size: 12.5px; text-align: center;">No se encontraron modificaciones</div>`;
                 listaResultados.style.display = 'block';
             }
         });
@@ -906,24 +903,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let botonesEscritorioHTML = '';
             if (item.isSubReceta) {
                 botonesEscritorioHTML = `
-                    <button type="button" class="btn-icon btn-view-sub" data-id="${item.id}">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                    </button>
-                    <button type="button" class="btn-icon btn-edit-sub" data-id="${item.id}">
-                        <i data-lucide="edit-3" style="width: 18px; height: 18px;"></i>
-                    </button>
+                    <button type="button" class="btn-icon btn-view-sub" data-id="${item.id}"><i data-lucide="eye" style="width: 18px; height: 18px;"></i></button>
+                    <button type="button" class="btn-icon btn-edit-sub" data-id="${item.id}"><i data-lucide="edit-3" style="width: 18px; height: 18px;"></i></button>
                 `;
             }
             botonesEscritorioHTML += `
-                <button type="button" class="btn-icon btn-remove-receta" data-id="${item.id}">
-                    <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
-                </button>
+                <button type="button" class="btn-icon btn-remove-receta" data-id="${item.id}"><i data-lucide="trash-2" style="width: 18px; height: 18px;"></i></button>
             `;
 
             const botonMovilHTML = `
-                <button type="button" class="btn-mobile-options" data-id="${item.id}">
-                    <span>Opciones</span><i data-lucide="more-vertical" style="width: 14px; height: 14px;"></i>
-                </button>
+                <button type="button" class="btn-mobile-options" data-id="${item.id}"><span>Opciones</span><i data-lucide="more-vertical" style="width: 14px; height: 14px;"></i></button>
             `;
 
             fila.innerHTML = `
@@ -1344,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return { ...ing, gridCantidad: nuevaCantidad, costoProporcional: nuevoCostoProp };
                 });
 
-                return { nombre: nuevoNombreReceta, ingredientes: nuevosIngredientesActualizados, costoTotal: nuevoCostoTotalSub };
+                return { nombre: nuevoNombreReceta, ingredients: nuevosIngredientesActualizados, costoTotal: nuevoCostoTotalSub };
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -1560,15 +1549,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnFinalizar) {
-        btnFinalizar.addEventListener('click', async function() {
-            await subirDatosNube();
-            if (mensajeExito) {
-                mensajeExito.classList.add('show');
-                setTimeout(() => { mensajeExito.classList.remove('show'); }, 4000);
+if (btnFinalizar) {
+    btnFinalizar.addEventListener('click', async function() {
+        // 1. Respaldamos primero en Supabase
+        await subirDatosNube();
+
+        // 2. Extraemos el total calculado de la interfaz
+        const totalPastelTexto = document.getElementById('res-precio-sugerido')?.textContent || "$0.00";
+        
+        // Convertimos el texto (ej: "$200.00") a un número flotante válido para operaciones
+        const totalNumero = parseFloat(totalPastelTexto.replace(/[^0-9.-]+/g, "")) || 0;
+        
+        // Calculamos el 70% de anticipo de forma interna
+        const anticipoNumero = totalNumero * 0.70;
+        
+        // Formateamos el anticipo de vuelta a moneda internacional ($0.00)
+        const anticipoTexto = new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN'
+        }).format(anticipoNumero);
+
+        // 3. Mensaje ejecutivo (Sin encabezado y con el anticipo calculado)
+        const textoMensaje = 
+            `Estimado(a) cliente,\n` +
+            `Es un placer saludarle. A continuación, le compartimos la cotización formal para el diseño y elaboración de su pieza de repostería fina:\n\n` +
+            `▪️ *Inversión Total del Proyecto:* ${totalPastelTexto}\n` +
+            `▪️ *Anticipo Requerido (70%):* ${anticipoTexto}\n\n` +
+            `*Términos y condiciones de la propuesta:*\n` +
+            `• El presupuesto incluye insumos de alta calidad, diseño personalizado y horas de producción artesanal.\n` +
+            `• Esta cotización tiene una vigencia de 5 días naturales a partir de su emisión.\n` +
+            `• Para proceder con la reserva de la fecha y orden de producción, se requiere la liquidación del anticipo correspondiente.\n\n` +
+            `Quedamos a su entera disposición para cualquier ajuste o confirmación en su pedido.\n\n` +
+            `Atentamente,\n` +
+            `*Taller de Alta Pastelería*`;
+
+        // 4. Codificación de texto para la URL
+        const textoCodificado = encodeURIComponent(textoMensaje);
+
+        // 5. Ventana flotante para el número del cliente
+        Swal.fire({
+            title: 'Enviar Cotización Profesional',
+            text: 'Ingrese el número del cliente (10 dígitos):',
+            input: 'text',
+            inputPlaceholder: 'Ej. 2291234567',
+            showCancelButton: true,
+            confirmButtonText: '💼 Enviar Vía WhatsApp',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'swal2-popup-custom',
+                title: 'swal2-title-custom',
+                actions: 'swal2-actions-custom',
+                confirmButton: 'swal2-confirm-custom',
+                cancelButton: 'swal2-cancel-custom'
+            },
+            inputValidator: (value) => {
+                if (!value) return '¡El número de teléfono es obligatorio!';
+                if (!/^\d+$/.test(value.trim())) return 'Por favor, ingrese solo números.';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const telefono = result.value.trim();
+                const urlWhatsApp = `https://api.whatsapp.com/send?phone=52${telefono}&text=${textoCodificado}`;
+                window.open(urlWhatsApp, '_blank');
             }
         });
-    }
+    });
+}
 
     // ==========================================
     // MODAL: GUÍA DE AYUDA PREMIUM
@@ -1644,45 +1691,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-// ==========================================
-// BOTÓN DE CIERRE EXPLÍCITO (CORREGIDO)
-// ==========================================
-const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
-if (btnCerrarSesion && supabase) {
-    btnCerrarSesion.addEventListener('click', () => {
-        Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: "Se ocultará tu panel de repostería hasta que vuelvas a ingresar.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, salir',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: false,
-            customClass: {
-                popup: 'swal2-popup-custom', title: 'swal2-title-custom', actions: 'swal2-actions-custom', confirmButton: 'swal2-deny-custom', cancelButton: 'swal2-cancel-custom'
-            }
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    Swal.fire('Error', 'No se pudo cerrar la sesión correctamente.', 'error');
-                } else {
-                    // ¡Adiós a localStorage.clear()! 
-                    // Si tienes variables de estado locales que limpiar del Storage, hazlo uno por uno:
-                    // localStorage.removeItem('tus_variables_locales'); 
-                    
-                    Swal.fire({ 
-                        title: 'Sesión Finalizada 🌟', 
-                        text: 'Tus recetas y costos quedan resguardados de forma segura. ¡Vuelve pronto a NEXI Pastelería!', 
-                        icon: 'success', 
-                        timer: 2500, 
-                        showConfirmButton: false 
-                    });
+    // ==========================================
+    // BOTÓN DE CIERRE EXPLÍCITO
+    // ==========================================
+    const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+    if (btnCerrarSesion && supabase) {
+        btnCerrarSesion.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "Se ocultará tu panel de repostería hasta que vuelvas a ingresar.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar',
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'swal2-popup-custom', title: 'swal2-title-custom', actions: 'swal2-actions-custom', confirmButton: 'swal2-deny-custom', cancelButton: 'swal2-cancel-custom'
                 }
-            }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) {
+                        Swal.fire('Error', 'No se pudo cerrar la sesión correctamente.', 'error');
+                    } else {
+                        Swal.fire({ 
+                            title: 'Sesión Finalizada 🌟', 
+                            text: 'Tus recetas y costos quedan resguardados de forma segura. ¡Vuelve pronto a NEXI Pastelería!', 
+                            icon: 'success', 
+                            timer: 2500, 
+                            showConfirmButton: false 
+                        });
+                    }
+                }
+            });
         });
-    });
-}
+    }
 
     // ==========================================
     // MANEJO INTERACTIVO DEL BANNER Y CAPA DE BLOQUEO
@@ -1709,28 +1752,102 @@ if (btnCerrarSesion && supabase) {
         }
     }
     
-    // ==========================================
-    // NUEVO MOTOR INTERACTIVO DE VOZ GUIADO PASO A PASO (OPTIMIZADO RAPIDEZ)
-    // ==========================================
+    // =========================================================================
+    // 🎙️ MOTOR INTERACTIVO DE VOZ (UNIFICADO, REPARADO Y CON DICCIONARIO)
+    // =========================================================================
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let reconocimientoVoz;
     let asistenteVozActivo = false;
     let pasoVozActual = 0; 
     
-    const pasosVoz = ["nombre", "marca", "precio", "cantidad"];
+    const pasosVoz = ["nombre", "marca", "precio", "cantidad", "unidad"];
     const datosVozInsumo = { nombre: "", marca: "", precio: 0, cantidad: 0, unidad: "gr" };
+
+    let asistenteRecetaActivo = false;
+    let pasoRecetaActual = 0;
+    const pasosReceta = ["nombreInsumo", "cantidadInsumo"];
+    const datosVozReceta = { nombre: "", cantidad: 0 };
+
+    // 📖 DICCIONARIO DE CORRECCIÓN DE MARCAS REPOSTERAS
+    const diccionarioMarcas = {
+        "filadelfia": "Philadelphia",
+        "philadelphia": "Philadelphia",
+        "maicena": "Maizena",
+        "nescafe": "Nescafé",
+        "nutela": "Nutella",
+        "nutella": "Nutella",
+        "chantili": "Chantilly",
+        "chantilly": "Chantilly",
+        "hersis": "Hershey's",
+        "hersheys": "Hershey's",
+        "turin": "Turín",
+        "lala": "Lala",
+        "sulca": "Zulka",
+        "alpepsi": "Alpezzi",
+        "alpesi": "Alpezzi",
+        "enco": "Enko"
+    };
+
+    function reproducirPitidoAviso() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscilador = audioCtx.createOscillator();
+            const ganancia = audioCtx.createGain();
+            
+            oscilador.type = 'sine';
+            oscilador.frequency.setValueAtTime(660, audioCtx.currentTime); 
+            ganancia.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            
+            oscilador.connect(ganancia);
+            ganancia.connect(audioCtx.destination);
+            
+            oscilador.start();
+            oscilador.stop(audioCtx.currentTime + 0.12); 
+        } catch (e) {
+            console.warn("No se pudo reproducir el pitido de la API de Audio:", e);
+        }
+    }
 
     function hablarSistema(texto, callback) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel(); 
         const enunciado = new SpeechSynthesisUtterance(texto);
         enunciado.lang = 'es-MX';
-        enunciado.rate = 1.1; 
+        enunciado.rate = 1.15; 
         
         enunciado.onend = () => { 
-            setTimeout(() => { if (callback) callback(); }, 300); 
+            setTimeout(() => { 
+                if (callback) {
+                    reproducirPitidoAviso(); 
+                    setTimeout(callback, 150); 
+                } 
+            }, 100); 
         };
         window.speechSynthesis.speak(enunciado); 
+    }
+
+    function normalizarCantidad(texto) {
+        let cantidad = texto.toLowerCase().trim();
+        
+        const numeros = {
+            "uno": 1, "una": 1, "un": 1,
+            "dos": 2,
+            "tres": 3,
+            "cuatro": 4,
+            "cinco": 5,
+            "seis": 6,
+            "siete": 7,
+            "ocho": 8,
+            "nueve": 9,
+            "diez": 10
+        };
+
+        if (numeros[cantidad]) {
+            return numeros[cantidad];
+        }
+        
+        let digitoDetectado = parseFloat(cantidad.match(/\d+(?:\.\d+)?/));
+        return !isNaN(digitoDetectado) ? digitoDetectado : cantidad;
     }
 
     if (SpeechRecognition) {
@@ -1739,17 +1856,15 @@ if (btnCerrarSesion && supabase) {
         reconocimientoVoz.continuous = false; 
         reconocimientoVoz.interimResults = false;
 
-                reconocimientoVoz.onresult = function(event) {
+        reconocimientoVoz.onresult = function(event) {
             const resultadoTexto = event.results[0][0].transcript.trim().toLowerCase();
             
-            // Si el asistente de la RECETA es el que está activo:
             if (asistenteRecetaActivo) {
                 console.log("Asistente Receta - Capturado:", resultadoTexto);
-                procesarPasoRecetaVoz(resultadoTexto);
+                if (typeof procesarPasoRecetaVoz === 'function') procesarPasoRecetaVoz(resultadoTexto);
                 return;
             }
 
-            // Si no, corre el asistente del ALMACÉN (Tu código anterior)
             if (asistenteVozActivo) {
                 console.log(`Asistente Almacén - Capturado paso [${pasosVoz[pasoVozActual]}]:`, resultadoTexto);
                 procesarEntradaPasoVoz(resultadoTexto);
@@ -1757,9 +1872,7 @@ if (btnCerrarSesion && supabase) {
         };
 
         reconocimientoVoz.onend = function() {
-            if (asistenteVozActivo) {
-                console.log("Micrófono en espera...");
-            }
+            console.log("Micrófono terminado.");
         };
 
         reconocimientoVoz.onerror = function(event) {
@@ -1807,7 +1920,8 @@ if (btnCerrarSesion && supabase) {
             case "nombre": preguntaTexto = "Nombre del Artículo"; break;
             case "marca": preguntaTexto = "Marca"; break;
             case "precio": preguntaTexto = "Precio"; break;
-            case "cantidad": preguntaTexto = "Cantidad"; break;
+            case "cantidad": preguntaTexto = "Dime solo el número de la cantidad"; break;
+            case "unidad": preguntaTexto = "¿Qué unidad es?"; break; 
         }
 
         hablarSistema(preguntaTexto, () => {
@@ -1818,11 +1932,7 @@ if (btnCerrarSesion && supabase) {
     }
 
     function procesarEntradaPasoVoz(texto) {
-        let textoLimpio = texto.replace(/\bun\b|\buna\b/g, "1")
-                               .replace(/\bdos\b/g, "2")
-                               .replace(/\btres\b/g, "3")
-                               .replace(/ pesos/g, "").trim();
-
+        let textoLimpio = texto.replace(/ pesos/g, "").trim();
         const pasoActual = pasosVoz[pasoVozActual];
 
         switch(pasoActual) {
@@ -1831,7 +1941,7 @@ if (btnCerrarSesion && supabase) {
                     datosVozInsumo.nombre = texto.charAt(0).toUpperCase() + texto.slice(1);
                     pasoVozActual++;
                 } else {
-                    hablarSistema("No te entendí. ¿Cuál es el nombre del insumo?", () => { reconocimientoVoz.start(); });
+                    hablarSistema("No te entendí. ¿Cuál es el nombre?", () => { reconocimientoVoz.start(); });
                     return;
                 }
                 break;
@@ -1840,58 +1950,87 @@ if (btnCerrarSesion && supabase) {
                 if (textoLimpio.includes("no tiene") || textoLimpio.includes("generico") || textoLimpio.includes("sin marca")) {
                     datosVozInsumo.marca = "Genérico";
                 } else {
-                    datosVozInsumo.marca = texto.charAt(0).toUpperCase() + texto.slice(1);
+                    // 🔍 PROCESAMIENTO CON EL DICCIONARIO DE MARCAS (Mapeo Inteligente)
+                    let marcaEncontrada = textoLimpio.toLowerCase();
+                    if (diccionarioMarcas[marcaEncontrada]) {
+                        datosVozInsumo.marca = diccionarioMarcas[marcaEncontrada];
+                    } else {
+                        // Respaldo por si no está en el diccionario: pone la primera letra en mayúscula
+                        datosVozInsumo.marca = texto.charAt(0).toUpperCase() + texto.slice(1);
+                    }
                 }
                 pasoVozActual++;
                 break;
 
             case "precio":
-                let precioDetectado = parseFloat(textoLimpio.match(/\d+(?:\.\d+)?/));
+                let precioConvertido = normalizarCantidad(textoLimpio);
+                let precioDetectado = typeof precioConvertido === 'number' ? precioConvertido : parseFloat(textoLimpio.match(/\d+(?:\.\d+)?/));
                 if (!isNaN(precioDetectado)) {
                     datosVozInsumo.precio = precioDetectado;
                     pasoVozActual++;
                 } else {
-                    hablarSistema("No pude identificar el precio. Por favor, dime solo el número.", () => { reconocimientoVoz.start(); });
+                    hablarSistema("Dime solo el número del precio", () => { reconocimientoVoz.start(); });
                     return;
                 }
                 break;
 
-                        case "cantidad":
-                // 1. Normalizamos lo que el navegador escucha (ej. "1 punto 30 kilos" o "1 coma 5 kg")
+            case "cantidad":
                 let cantidadLimpia = textoLimpio
                     .replace(/ y medio/g, ".5")
                     .replace(/ medio/g, "0.5")
                     .replace(/ con /g, ".")
                     .replace(/ punto /g, ".")
                     .replace(/ coma /g, ".")
-                    .replace(/,/g, "."); // Por si el navegador devuelve la coma decimal natural
+                    .replace(/,/g, "."); 
 
-                // 2. Regex mejorada para capturar números enteros o decimales con su unidad
-                let infoExtraida = cantidadLimpia.match(/(\d+(?:\.\d+)?)\s*(gramos?|gr|kilos?|kg|litros?|l|mililitros?|ml|piezas?|pza|metros?|m|paquetes?|paq)/);
+                let numeroDetectado = normalizarCantidad(cantidadLimpia);
                 
-                if (infoExtraida) {
-                    // Convertimos explícitamente a Float para conservar los decimales (ej. 1.30)
-                    datosVozInsumo.cantidad = parseFloat(infoExtraida[1]); 
-                    const unidadRaw = infoExtraida[2];
-                    
-                    if (unidadRaw.includes("kg") || unidadRaw.includes("kilo")) datosVozInsumo.unidad = "kilo";
-                    else if (unidadRaw.includes("litro") || unidadRaw === "l") datosVozInsumo.unidad = "litro";
-                    else if (unidadRaw.includes("ml")) datosVozInsumo.unidad = "ml";
-                    else if (unidadRaw.includes("pza") || unidadRaw.includes("pieza")) datosVozInsumo.unidad = "pieza";
-                    else datosVozInsumo.unidad = "gr";
-                    
-                    pasoVozActual++;
+                if (!isNaN(numeroDetectado)) {
+                    datosVozInsumo.cantidad = numeroDetectado;
+                    if (insumoCantidad) insumoCantidad.value = numeroDetectado;
+                    pasoVozActual++; 
                 } else {
-                    hablarSistema("No entendí la cantidad o unidad. Di por ejemplo, 1 punto 30 kilos.", () => { reconocimientoVoz.start(); });
+                    hablarSistema("No entendí el número. Por favor repítelo.", () => { reconocimientoVoz.start(); });
                     return;
                 }
                 break;
 
+            case "unidad":
+                let unidadDictada = textoLimpio.toLowerCase();
+                let unidadAsignada = "";
+
+                if (unidadDictada.includes("gramo") || unidadDictada === "gr" || unidadDictada === "g") {
+                    unidadAsignada = "gr";
+                } else if (unidadDictada.includes("kilo") || unidadDictada === "kg") {
+                    unidadAsignada = "kilo";
+                } else if (unidadDictada.includes("litro") || unidadDictada === "l") {
+                    unidadAsignada = "litro";
+                } else if (unidadDictada.includes("ml") || unidadDictada.includes("mililitro")) {
+                    unidadAsignada = "ml";
+                } else if (unidadDictada.includes("pieza") || unidadDictada === "pza") {
+                    unidadAsignada = "pieza";
+                } else if (unidadDictada.includes("metro") || unidadDictada === "m") {
+                    unidadAsignada = "metro";
+                } else if (unidadDictada.includes("paquete") || unidadDictada === "paq") {
+                    unidadAsignada = "paquete";
+                }
+
+                if (unidadAsignada !== "") {
+                    datosVozInsumo.unidad = unidadAsignada;
+                    const selectUnidad = document.getElementById("insumo-unidad");
+                    if (selectUnidad) selectUnidad.value = unidadAsignada;
+                    pasoVozActual++; 
+                } else {
+                    hablarSistema("Unidad no válida. Di gramos, kilos, litros o mililitros.", () => { reconocimientoVoz.start(); });
+                    return;
+                }
+                break;
         }
 
         if (pasoVozActual < pasosVoz.length) {
             ejecutarSiguientePreguntaVoz();
         } else {
+            try { reconocimientoVoz.stop(); } catch(e){} 
             completarFlujoRegistroVoz();
         }
     }
@@ -1927,143 +2066,76 @@ if (btnCerrarSesion && supabase) {
         }
     }
     
-    let asistenteRecetaActivo = false;
-let pasoRecetaActual = 0;
-const pasosReceta = ["nombreInsumo", "cantidadInsumo"];
-const datosVozReceta = { nombre: "", cantidad: 0 };
+    const btnVozElement = document.getElementById('btn-voz-almacen');
+if (btnVozElement) {
+    btnVozElement.addEventListener('click', toggleAsistenteVozGuiado);
+}
 
-    // =========================================================================
-    // MOTOR DE VOZ PARA COMPOSICIÓN DE RECETA (NUEVO)
-    // =========================================================================
-    function toggleAsistenteReceta() {
+// 🎙️ ACTIVADOR PARA EL BOTÓN DICTAR A LA RECETA
+const btnVozReceta = document.getElementById('btn-voz-receta');
+if (btnVozReceta && SpeechRecognition) {
+    btnVozReceta.addEventListener('click', () => {
         if (!asistenteRecetaActivo) {
             asistenteRecetaActivo = true;
             pasoRecetaActual = 0;
-            datosVozReceta.nombre = "";
-            datosVozReceta.cantidad = 0;
+            btnVozReceta.innerHTML = "🛑 Detener Dictado";
+            btnVozReceta.style.backgroundColor = "#dc3545";
             
-            const btn = document.getElementById('btn-voz-receta');
-            if (btn) {
-                btn.innerHTML = "🛑 Detener Dictado";
-                btn.style.backgroundColor = "#dc3545";
-            }
-            ejecutarPreguntaRecetaVoz();
-        } else {
-            finalizarAsistenteReceta();
-        }
-    }
-
-    function ejecutarPreguntaRecetaVoz() {
-        if (!asistenteRecetaActivo) return;
-
-        let preguntaTexto = "";
-        if (pasosReceta[pasoRecetaActual] === "nombreInsumo") {
-            preguntaTexto = "Nombre"; // Corto y rápido
-        } else if (pasosReceta[pasoRecetaActual] === "cantidadInsumo") {
-            preguntaTexto = "Cantidad"; // Al grano
-        }
-
-        hablarSistema(preguntaTexto, () => {
-            if (asistenteRecetaActivo) {
+            hablarSistema("¿Qué insumo deseas agregar?", () => {
                 try { reconocimientoVoz.start(); } catch(e) { console.log(e); }
+            });
+        } else {
+            asistenteRecetaActivo = false;
+            try { reconocimientoVoz.stop(); } catch(e){}
+            btnVozReceta.innerHTML = "🎙️ Dictar a la Receta";
+            btnVozReceta.style.backgroundColor = "#7c7267";
+        }
+    });
+}
+
+function procesarPasoRecetaVoz(texto) {
+    if (pasoRecetaActual === 0) { // Paso: Nombre del insumo
+        let itemEncontrado = listaItems.find(item => 
+            item.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 
+            texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        );
+
+        if (itemEncontrado) {
+            insumoSeleccionadoPorBuscador = itemEncontrado;
+            if (inputBuscar) inputBuscar.value = itemEncontrado.nombre;
+            pasoRecetaActual = 1;
+            hablarSistema(`¿Qué cantidad de ${itemEncontrado.nombre} vas a usar?`, () => {
+                try { reconocimientoVoz.start(); } catch(e){}
+            });
+        } else {
+            hablarSistema(`No encontré el insumo ${texto} en tu almacén. Intenta de nuevo o regístralo primero.`, () => {
+                try { reconocimientoVoz.start(); } catch(e){}
+            });
+        }
+    } else if (pasoRecetaActual === 1) { // Paso: Cantidad
+        let numero = normalizarCantidad(texto);
+        if (!isNaN(numero)) {
+            if (recetaCantidad) recetaCantidad.value = numero;
+            
+            // Simular el submit del formulario de la receta de forma automática
+            asistenteRecetaActivo = false;
+            const btnVozReceta = document.getElementById('btn-voz-receta');
+            if (btnVozReceta) {
+                btnVozReceta.innerHTML = "🎙️ Dictar a la Receta";
+                btnVozReceta.style.backgroundColor = "#7c7267";
             }
-        });
-    }
-    
-    // Modificamos el comportamiento de captura cuando este asistente esté activo
-    // Para lograrlo, interceptaremos el "onresult" existente o lo adaptamos:
-
-    function procesarPasoRecetaVoz(texto) {
-        let pasoActual = pasosReceta[pasoRecetaActual];
-
-        if (pasoActual === "nombreInsumo") {
-            const termino = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const itemEncontrado = listaItems.find(item => 
-                item.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termino)
-            );
-
-            if (itemEncontrado) {
-                datosVozReceta.nombre = itemEncontrado.nombre;
-                insumoSeleccionadoPorBuscador = itemEncontrado; 
-                
-                if (inputBuscar) {
-                    inputBuscar.value = itemEncontrado.nombre + (itemEncontrado.marca !== 'Genérico' ? ` (${itemEncontrado.marca})` : '');
-                }
-                
-                pasoRecetaActual++;
-                ejecutarPreguntaRecetaVoz(); // Pasa inmediatamente a pedir la "Cantidad"
-            } else {
-                // Si falla, da un aviso ultra corto y vuelve a escuchar el nombre rápido
-                hablarSistema("No existe", () => {
-                    try { reconocimientoVoz.start(); } catch(e) {}
-                });
+            
+            // Disparar el envío para guardarlo en la tabla y Supabase
+            if (formReceta) {
+                formReceta.requestSubmit();
             }
-        } 
-                else if (pasoActual === "cantidadInsumo") {
-            // 1. Normalizamos el texto del número
-            let cantidadLimpia = texto
-                .replace(/\bun\b|\buna\b/g, "1")
-                .replace(/ y medio/g, ".5")
-                .replace(/ medio/g, "0.5")
-                .replace(/ con /g, ".")
-                .replace(/ punto /g, ".")
-                .replace(/ coma /g, ".")
-                .replace(/,/g, ".");
-
-            // 2. Extraemos el número flotante
-            let numeroDetectado = parseFloat(cantidadLimpia.match(/\d+(?:\.\d+)?/));
-
-            if (!isNaN(numeroDetectado)) {
-                // 3. ¡CONVERSIÓN INTELIGENTE!: Si el usuario menciona unidades grandes, multiplicamos por 1000
-                if (cantidadLimpia.includes("kilo") || cantidadLimpia.includes("kg") || 
-                    cantidadLimpia.includes("litro") || cantidadLimpia.match(/\bl\b/)) {
-                    
-                    numeroDetectado = numeroDetectado * 1000; // 1.1 litros -> 1100 ml
-                }
-
-                datosVozReceta.cantidad = numeroDetectado;
-                
-                // Asignamos el valor final convertido al input de la interfaz
-                if (recetaCantidad) recetaCantidad.value = numeroDetectado;
-                
-                completarFlujoRecetaVoz(); // Sube directo a Supabase
-            } else {
-                hablarSistema("Repite número", () => {
-                    try { reconocimientoVoz.start(); } catch(e) {}
-                });
-            }
+        } else {
+            hablarSistema("No entendí la cantidad. Dime solo el número.", () => {
+                try { reconocimientoVoz.start(); } catch(e){}
+            });
         }
     }
-    
-    function completarFlujoRecetaVoz() {
-        asistenteRecetaActivo = false;
-        restaurarBotonRecetaVoz();
-
-        // Disparamos un submit simulado al formulario de tu receta para que use tu lógica Supabase existente
-        if (formReceta) {
-            formReceta.dispatchEvent(new Event('submit'));
-        }
-    }
-
-    function finalizarAsistenteReceta() {
-        asistenteRecetaActivo = false;
-        try { reconocimientoVoz.stop(); } catch(e){}
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
-        restaurarBotonRecetaVoz();
-    }
-
-    function restaurarBotonRecetaVoz() {
-        const btn = document.getElementById('btn-voz-receta');
-        if (btn) {
-            btn.style.backgroundColor = "#7c7267";
-            btn.innerHTML = "🎙️ Dictar a la Receta";
-        }
-    }
-
-    const btnVozRecetaElement = document.getElementById('btn-voz-receta');
-    if (btnVozRecetaElement && SpeechRecognition) {
-        btnVozRecetaElement.addEventListener('click', toggleAsistenteReceta);
-    }
+}
 
 
 });

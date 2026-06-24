@@ -1000,3 +1000,59 @@ th.text-right, td.text-right {
         margin-top: 10px;
     }
 }
+
+/* ==========================================================================
+   OPTIMIZACIÓN DE ANCHO COMPLETO Y CENTRADO MÁXIMO (TABLET Y PC)
+   ========================================================================== */
+@media (min-width: 768px) {
+    
+    /* 1. Aseguramos que el body centre de forma absoluta todo su contenido */
+    body {
+        align-items: center !important;
+        justify-content: flex-start;
+        padding: 40px 40px; /* Margen cómodo a los lados de la pantalla */
+    }
+
+    /* 2. Forzamos a que el Header ocupe el ancho y centre sus textos */
+    .header {
+        max-width: 92% !important; /* Mismo ancho que los bloques */
+        width: 100% !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important; /* Centra el logo, título y subtítulo */
+        margin: 0 auto 40px auto !important;
+    }
+
+    /* 3. Ajustamos los contenedores principales para abarcar casi toda la pantalla */
+    .app-container, 
+    #auth-container {
+        width: 100% !important;
+        max-width: 92% !important; /* Crece casi al ancho total de la pantalla (PC/Tablet) */
+        margin: 0 auto !important; /* Centrado perfecto en la pantalla */
+    }
+
+    /* 4. Hacemos que todas las tarjetas (cards) se ensanchen en consecuencia */
+    .card, 
+    .card-premium {
+        width: 100% !important;
+        padding: 45px !important; /* Más espacio interno para que se vea premium en PC */
+    }
+
+    /* 5. Distribución inteligente de formularios en pantallas anchas */
+    .grid-form {
+        display: grid !important;
+        /* Reparte los campos limpiamente a lo largo del nuevo ancho gigante */
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; 
+        gap: 20px !important;
+        width: 100% !important;
+        align-items: flex-end !important;
+    }
+
+    /* Ajuste para que los botones del formulario no se deformen en el ancho gigante */
+    .grid-form .btn, 
+    .grid-form button {
+        width: auto !important;
+        padding: 12px 30px !important;
+    }
+}
