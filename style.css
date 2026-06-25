@@ -1,0 +1,1359 @@
+:root {
+    /* ✨ Nueva Paleta Japandi Atelier de Repostería */
+    --japandi-bg: #F7F3E9;          /* Tono Harina / Crema pastelera base */
+    --japandi-card: #FFFFFF;        /* Hojas de papel blanco pulcro */
+    --japandi-clay: #E6DFD3;        /* Arcilla suave / Lino */
+    --japandi-wood: #6D6053;        /* Madera de nogal / Corteza de pan Horneado */
+    --japandi-dark: #23211F;        /* Carbón orgánico (reemplaza al negro puro, más suave) */
+    --japandi-muted: #968F85;       /* Sombra de lino / Harina integral */
+    --japandi-accent: #B88E74;      /* Canela / Mantequilla tostada (Terracota refinado) */
+    
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --sombra-premium: 0 12px 40px rgba(109, 96, 83, 0.04);
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    /* ✨ FONDO HARINA ULTRA LIMPIO */
+    background-image: linear-gradient(rgba(247, 243, 233, 0.25), rgba(247, 243, 233, 0.25)), 
+                      url('https://www.transparenttextures.com/patterns/cream-paper.png');
+    background-size: auto;
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-color: #F7F3E9;
+    
+    color: var(--japandi-dark);
+    padding: 24px 16px;
+    line-height: 1.6;
+}
+
+/* --- 1. HEADER (Estilo Menú de Autor) --- */
+header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed var(--japandi-clay);
+    text-align: center;
+    align-items: center;
+}
+
+header h1 {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+}
+
+header h1 span {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--japandi-accent);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.auth-buttons button {
+    padding: 8px 24px;
+    border-radius: 50px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    border: 1px solid var(--japandi-clay);
+    background: var(--japandi-card);
+    color: var(--japandi-wood);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+.auth-buttons button:active {
+    transform: scale(0.97);
+    background: var(--japandi-bg);
+}
+
+.auth-buttons button.hidden { display: none !important; }
+
+/* --- 2. TARJETAS Y ESTRUCTURA --- */
+.contenedor-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.tarjeta {
+    background: var(--japandi-card);
+    border: 1px solid rgba(230, 223, 211, 0.6);
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: var(--sombra-premium);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Cabeceras de sección elegantes unificadas */
+.tarjeta-seccion-header {
+    margin-bottom: 24px;
+}
+
+.tarjeta-seccion-header h2 {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    color: #1C1B1A;
+    margin: 0 0 4px 0;
+    font-weight: 400;
+}
+
+.tarjeta-seccion-header p {
+    font-size: 13px;
+    color: #7A7265;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.tarjeta.tarjeta-analisis-costo {
+    margin-top: 0; /* Controlado nativamente por el gap del contenedor */
+}
+
+/* Tabs minimalistamente perfectas */
+.tabs {
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid var(--japandi-clay);
+    width: 100%;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    cursor: pointer;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: var(--japandi-muted);
+    position: relative;
+    transition: var(--transition-smooth);
+}
+
+.tab.active { 
+    color: var(--japandi-dark); 
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--japandi-accent);
+}
+
+/* --- 3. INPUTS ESTILO MINIMALISTA --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.grupo-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.grupo-campo label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--japandi-wood);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--japandi-clay);
+    border-radius: 10px;
+    font-size: 14px;
+    background: #FCFAF6;
+    color: var(--japandi-dark);
+    outline: none;
+    transition: var(--transition-smooth);
+}
+input:focus, select:focus {
+    border-color: var(--japandi-accent);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(184, 142, 116, 0.08);
+}
+
+.fila-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- 4. BOTONES --- */
+button[type="submit"], .btn-accion-principal {
+    background: var(--japandi-dark);
+    color: #FFFFFF;
+    border: none;
+    padding: 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(35, 33, 31, 0.15);
+    transition: var(--transition-smooth);
+}
+button[type="submit"]:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 5px rgba(35, 33, 31, 0.1);
+}
+
+.btn-accion-principal { 
+    background: var(--japandi-accent); 
+    box-shadow: 0 4px 15px rgba(184, 142, 116, 0.25);
+}
+.btn-accion-principal:active {
+    box-shadow: 0 2px 5px rgba(184, 142, 116, 0.15);
+}
+
+.btn-exportar-presupuesto {
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* --- 5. TABLAS DE AUTOR (Responsivas y unificadas) --- */
+.tabla-contenedor, .contenedor-tabla-receta, .table-responsive-receta {
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.tabla-contenedor::-webkit-scrollbar, 
+.contenedor-tabla-receta::-webkit-scrollbar, 
+.table-responsive-receta::-webkit-scrollbar {
+    display: none;
+}
+
+/* Configuración de anchos para que respire idéntico al almacén */
+#tabla-receta {
+    width: 100% !important;
+    min-width: 500px !important; 
+    table-layout: fixed; 
+}
+
+#tabla-receta th:nth-child(1), #tabla-receta td:nth-child(1) { width: 30%; text-align: left; }
+#tabla-receta th:nth-child(2), #tabla-receta td:nth-child(2) { width: 15%; text-align: center; }
+#tabla-receta th:nth-child(3), #tabla-receta td:nth-child(3) { width: 35%; text-align: right; }
+#tabla-receta th:nth-child(4), #tabla-receta td:nth-child(4) { width: 10%; text-align: center; }
+#tabla-receta th:nth-child(5), #tabla-receta td:nth-child(5) { width: 10%; text-align: center; }
+
+.txt-tabla-vacia {
+    text-align: center !important;
+    color: var(--japandi-muted);
+    padding: 32px 0 !important;
+    font-style: italic;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 500px;
+}
+
+th {
+    padding: 12px 14px;
+    color: var(--japandi-muted);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--japandi-clay);
+    text-align: left;
+}
+
+td {
+    padding: 16px 14px;
+    border-bottom: 1px solid rgba(230, 223, 211, 0.4);
+    color: var(--japandi-dark);
+}
+td strong {
+    font-weight: 500;
+}
+
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+.actions-cell {
+    display: flex !important;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 80px;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--japandi-muted);
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+.btn-icon:hover, .btn-icon:active {
+    color: var(--japandi-accent);
+    background: var(--japandi-bg);
+}
+.btn-icon.delete:hover, .btn-icon.delete:active {
+    color: #A95A4D;
+}
+
+/* --- 6. PAGINACIÓN (Aireada y Adaptable a los Extremos) --- */
+.paginacion-ui, .paginacion-ui-nueva {
+    display: flex !important;
+    flex-direction: row !important; /* Mantiene fila limpia en móviles */
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--japandi-muted);
+    margin-top: 32px;  /* Aire vertical generoso */
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Estilo unificado de botones premium de paginación */
+.paginacion-ui button, .paginacion-botones button {
+    padding: 10px 18px !important; /* Más aire interno en el botón */
+    border: 1px solid var(--japandi-clay) !important;
+    background: #FFFFFF !important;
+    border-radius: 50px !important; /* Píldora Japandi idéntica a Auth */
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--japandi-wood) !important;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    box-shadow: 0 2px 6px rgba(109, 96, 83, 0.02);
+    flex: none !important;
+}
+
+.paginacion-ui button:active, .paginacion-botones button:active {
+    background-color: var(--japandi-bg) !important;
+    transform: scale(0.97);
+}
+
+.paginacion-ui-nueva #pag-info-texto {
+    font-size: 11px !important;
+    font-weight: 500;
+    color: var(--japandi-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    order: 1 !important;
+}
+
+.paginacion-botones {
+    display: flex !important;
+    width: auto !important; /* Libera el ancho completo bloqueando que se rompa */
+    gap: 8px !important;
+    order: 2 !important;
+}
+
+/* --- 7. RESUMEN FINANCIERO (Caja de Madera Suave) --- */
+.resumen-financiero {
+    background: rgba(247, 243, 233, 0.6);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+    border: 1px solid var(--japandi-clay);
+}
+
+.fila-resumen {
+    display: flex;
+    justify-content: space-between;
+    color: var(--japandi-wood);
+}
+
+.fila-resumen.destacado {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    color: var(--japandi-dark);
+    border-top: 1px dashed var(--japandi-clay);
+    padding-top: 16px;
+    margin-top: 6px;
+}
+
+/* --- 📦 SECCIÓN ALMACÉN --- */
+.almacen-header {
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+    border: none !important;
+}
+
+.almacen-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.almacen-header h2 {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    font-weight: 400;
+    color: var(--japandi-dark);
+    margin: 0 0 4px 0;
+}
+
+.almacen-header p {
+    font-size: 0.82rem;
+    color: var(--japandi-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* --- 8. BANNER DE ESTATUS DINÁMICO --- */
+.banner-estatus {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    transition: var(--transition-smooth);
+}
+
+.banner-estatus.estado-local {
+    background-color: #EAE3D5;
+    color: var(--japandi-wood);
+    border: 1px dashed var(--japandi-muted);
+}
+
+.banner-estatus.estado-esencial {
+    background-color: #FFFFFF;
+    color: var(--japandi-dark);
+    border: 1px solid var(--japandi-clay);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.banner-estatus.estado-premium {
+    background-color: var(--japandi-accent);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(184, 142, 116, 0.2);
+}
+
+/* --- 🎙️ BOTÓN DE DICTADO POR VOZ --- */
+#btn-dictar-voz.btn-icon,
+button#btn-dictar-voz {
+    position: relative !important;
+    z-index: 99 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: var(--japandi-clay) !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 10px !important;
+    margin: 0 !important;
+    box-shadow: 0 3px 10px rgba(109, 96, 83, 0.12) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    touch-action: manipulation;
+}
+
+#btn-dictar-voz.btn-icon svg,
+#btn-dictar-voz.btn-icon i {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--japandi-wood) !important;
+    stroke: var(--japandi-wood) !important;
+    display: block !important;
+    transition: transform 0.2s ease !important;
+}
+
+#btn-dictar-voz.btn-icon:active {
+    background-color: var(--japandi-accent) !important;
+    transform: scale(0.92) !important;
+    box-shadow: 0 2px 5px rgba(184, 142, 116, 0.2) !important;
+}
+
+#btn-dictar-voz.btn-icon:active svg,
+#btn-dictar-voz.btn-icon:active i {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    transform: scale(0.95);
+}
+
+/* --- 4. BARRA DE ACCIONES EN RECETAS --- */
+.receta-acciones-bar { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 28px; 
+    justify-content: space-between; 
+}
+.btn-receta-accion { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid #7A7265; background-color: transparent; color: #1C1B1A; cursor: pointer; transition: all 0.25s ease; }
+.btn-guardar:hover, .btn-cargar:hover { background-color: #EFECE6; border-color: #1C1B1A; }
+.btn-vaciar { border-color: #A95A4D; color: #A95A4D; }
+.btn-vaciar:hover { background-color: #FDF9F8; border-color: #8C3F34; color: #8C3F34; }
+
+/* --- 🎨 MODALES SWEETALERT JAPANDI --- */
+.swal2-popup-custom { 
+    background: var(--japandi-bg) !important; 
+    border-radius: 20px !important; 
+    padding: 28px 24px !important; 
+    color: var(--japandi-dark) !important; 
+    width: 90% !important; 
+    max-width: 400px !important; 
+    border: 1px solid var(--japandi-clay) !important; 
+}
+
+.swal2-title-custom { 
+    font-family: var(--font-serif) !important; 
+    font-weight: 400 !important; 
+    font-size: 22px !important; 
+}
+
+.swal2-confirm-custom { 
+    background-color: var(--japandi-dark) !important; 
+    color: white !important; 
+    padding: 14px 28px !important; 
+    border-radius: 50px !important; 
+    font-size: 12px !important; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    font-weight: 600; 
+    cursor: pointer; 
+}
+
+.swal2-cancel-custom { 
+    background-color: transparent !important; 
+    color: var(--japandi-muted) !important; 
+    padding: 14px 20px !important; 
+    border-radius: 50px !important; 
+    font-size: 12px !important; 
+    text-transform: uppercase; 
+}
+
+.swal2-input-custom {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px 14px !important;
+    margin: 8px 0 14px 0 !important;
+    border: 1px solid var(--japandi-clay) !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-family: var(--font-sans) !important;
+    background-color: #FFF !important;
+    color: var(--japandi-dark) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: var(--transition-smooth);
+}
+
+.swal2-input-custom:focus {
+    border-color: var(--japandi-accent) !important;
+    box-shadow: 0 0 0 3px rgba(184, 142, 116, 0.08) !important;
+}
+
+.swal2-html-container {
+    text-align: left !important;
+    padding: 0 4px !important;
+}
+
+.swal2-label-custom {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--japandi-wood);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Modales de Audio (.swal2-popup-mic) */
+.swal2-popup-mic {
+    background: #FDFCFA !important;
+    border-radius: 24px !important;
+    padding: 32px 24px !important;
+    box-shadow: 0 15px 40px rgba(35, 33, 31, 0.08) !important;
+    border: 1px solid var(--japandi-clay) !important;
+    width: 88% !important;
+    max-width: 360px !important;
+}
+
+.swal2-popup-mic .swal2-icon.swal2-info {
+    display: none !important;
+}
+
+.swal2-title-mic {
+    font-family: var(--font-serif) !important;
+    color: var(--japandi-dark) !important;
+    font-size: 24px !important;
+    font-weight: 400 !important;
+    margin-top: 8px !important;
+    text-align: center !important;
+}
+
+.swal2-html-mic {
+    font-family: var(--font-sans) !important;
+    color: var(--japandi-muted) !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    text-align: center !important;
+    margin-top: 12px !important;
+}
+
+.voice-wave-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    height: 35px;
+    margin: 24px 0 12px 0;
+}
+
+.voice-bar {
+    width: 3px;
+    height: 6px;
+    background-color: var(--japandi-accent);
+    border-radius: 50px;
+    animation: wavePulse 1s ease-in-out infinite;
+}
+.voice-bar:nth-child(2) { animation-delay: 0.15s; height: 16px; }
+.voice-bar:nth-child(3) { animation-delay: 0.30s; height: 26px; }
+.voice-bar:nth-child(4) { animation-delay: 0.45s; height: 12px; }
+.voice-bar:nth-child(5) { animation-delay: 0.60s; height: 6px; }
+
+@keyframes wavePulse {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.5); }
+}
+
+.swal2-actions-mic {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 24px !important;
+    margin-top: 25px !important;
+    width: 100% !important;
+}
+
+.swal2-confirm-mic {
+    background-color: #7d6e65 !important;
+    color: #ffffff !important;
+    border: 1px solid #7d6e65 !important;
+    border-radius: 20px !important;
+    padding: 10px 28px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    min-width: 110px;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.swal2-cancel-mic {
+    background-color: transparent !important;
+    color: #7d6e65 !important;
+    border: 1px solid #7d6e65 !important;
+    border-radius: 20px !important;
+    padding: 10px 28px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    min-width: 110px;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* --- Forzar inputs en SweetAlert sin desborde --- */
+.swal2-popup-custom-select .swal2-select,
+.swal2-popup-custom .swal2-input-custom,
+.swal2-select {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Componentes de contraseña */
+.swal2-password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.swal2-password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--japandi-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 10;
+}
+.swal2-password-toggle:hover { color: var(--japandi-accent); }
+
+.password-strength-container { margin-top: -4px; margin-bottom: 10px; }
+.password-strength-bar { height: 4px; width: 100%; background-color: var(--japandi-clay); border-radius: 2px; overflow: hidden; transition: var(--transition-smooth); }
+.password-strength-fill { height: 100%; width: 0%; background-color: transparent; transition: width 0.3s ease, background-color 0.3s ease; }
+.password-strength-text { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; display: block; color: var(--japandi-muted); transition: color 0.3s ease; }
+
+.swal2-actions-auth { display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 12px !important; width: 100% !important; margin-top: 20px !important; }
+
+/* =========================================================================
+   📺 RESPONSIVE MEDIA QUERIES (Tablets & PC)
+   ========================================================================= */
+
+@media (min-width: 600px) {
+    body { padding: 32px 24px; }
+    header {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        align-items: center;
+    }
+    .tarjeta { padding: 32px; }
+    .fila-inputs { flex-direction: row; }
+    .fila-inputs .grupo-campo { flex: 1; }
+}
+
+@media (min-width: 1024px) {
+    body { padding: 48px 40px; }
+    header h1 { font-size: 32px; }
+    .contenedor-dashboard {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 40px;
+    }
+    .tarjeta { padding: 40px; }
+    .tarjeta h2 { font-size: 23px; }
+    th { font-size: 11px; }
+    td { padding: 18px 8px; font-size: 14px; }
+    .resumen-financiero { padding: 28px; }
+    .fila-resumen.destacado { font-size: 22px; }
+}
+
+/* Hover de ratón exclusivo para Escritorio */
+@media (hover: hover) {
+    .swal2-confirm-mic:hover {
+        background-color: #63564e !important;
+        border-color: #63564e !important;
+    }
+    .swal2-cancel-mic:hover {
+        background-color: rgba(125, 110, 101, 0.1) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .receta-acciones-bar { flex-direction: row; gap: 6px; }
+    .btn-receta-accion { padding: 10px 6px; font-size: 11px; }
+}
+
+/* Etiqueta elegante para diferenciar Insumos de Sub-recetas en las tablas */
+.tag-subreceta {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: rgba(184, 142, 116, 0.15);
+    color: var(--japandi-accent);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* =========================================================================
+   ✨ MIGRACIÓN DE ESTILOS DESDE JAVASCRIPT & AJUSTES DE AIRE
+   ========================================================================= */
+
+/* Mensajes y Alertas de Verificación (Auth) */
+.auth-verificacion-p {
+    font-size: 14px; 
+    color: #6D675B; 
+    line-height: 1.5; 
+    margin-bottom: 10px;
+}
+
+.auth-verificacion-box {
+    background-color: #FDFCFA; 
+    border: 1px dashed #7A7265; 
+    border-radius: 8px; 
+    padding: 12px; 
+    font-weight: bold; 
+    color: #2C2A27; 
+    font-size: 13px;
+}
+
+/* Modal Auth (Login/Registro) Estructura Interna */
+.auth-modal-flex {
+    text-align: left; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
+}
+
+.auth-modal-label {
+    font-size: 11px; 
+    font-weight: bold; 
+    color: #7A7265;
+}
+
+.auth-modal-switch-container {
+    text-align: center; 
+    margin-top: 12px;
+}
+
+.auth-modal-switch-link {
+    font-size: 12px; 
+    color: #4A6B82; 
+    text-decoration: underline;
+}
+
+/* Buscador en Tiempo Real */
+.opcion-insumo-lista {
+    padding: 10px 14px; 
+    cursor: pointer; 
+    border-bottom: 1px solid #FAF9F6; 
+    font-size: 13px;
+}
+
+.opcion-insumo-lista span {
+    color: #8A857C; 
+    font-size: 11px;
+}
+
+.buscador-vacio-msj {
+    padding: 12px; 
+    color: #8A857C; 
+    font-size: 12.5px; 
+    text-align: center;
+}
+
+/* Filas de la Tabla de Recetas */
+.fila-receta-item {
+    border-bottom: 1px solid #FAF9F6;
+}
+
+.fila-receta-item td {
+    padding: 14px 6px !important;
+    vertical-align: middle;
+}
+
+.fila-receta-item td strong {
+    color: #2C2A27; 
+    font-size: 13.5px;
+}
+
+.fila-receta-item td span {
+    color: #4E4A42; 
+    font-size: 13px;
+}
+
+.fila-receta-item-costo {
+    color: #2C2A27; 
+    font-weight: 500; 
+    font-size: 13.5px;
+}
+
+/* Editor de Recetas Interno (SweetAlert) */
+.editor-receta-flex {
+    text-align: left; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px;
+}
+
+.editor-receta-flex p {
+    font-size: 13px; 
+    color: #6D675B; 
+    line-height: 1.4; 
+    margin-bottom: 6px;
+}
+
+.editor-receta-flex p b {
+    color: #2C2A27; 
+    font-size: 14.5px;
+}
+
+.editor-receta-label-mini {
+    font-size: 10.5px; 
+    font-weight: bold; 
+    color: #7A7265; 
+    letter-spacing: 0.3px; 
+    margin-bottom: 2px;
+}
+
+#swal-receta-cantidad-input {
+    height: 34px !important;
+    padding: 4px 8px !important;
+    font-size: 13.5px !important;
+    margin-bottom: 12px !important;
+}
+
+.editor-receta-sub-box {
+    margin-top: 12px; 
+    text-align: left; 
+    background-color: #FDFCFA; 
+    border: 1px solid #EFECE6; 
+    border-radius: 8px; 
+    padding: 10px;
+}
+
+.editor-receta-sub-titulo {
+    font-size: 10.5px; 
+    font-weight: bold; 
+    color: #7A7265; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    display: block; 
+    margin-bottom: 8px;
+}
+
+.editor-receta-sub-scroll {
+    max-height: 160px; 
+    overflow-y: auto; 
+    padding-right: 2px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px;
+}
+
+.editor-receta-sub-item {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 8px; 
+    font-size: 12.5px; 
+    padding: 4px 0; 
+    border-bottom: 1px solid #FAF9F6; 
+    color: #2C2A27;
+}
+
+.editor-receta-sub-item-nom {
+    flex: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    color: #4E4A42;
+}
+
+.editor-receta-sub-item-input-wrapper {
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+    min-width: 95px; 
+    justify-content: flex-end;
+}
+
+.swal-insumo-interno-input {
+    width: 60px !important;
+    max-width: 60px !important;
+    height: 28px !important;
+    padding: 2px 4px !important;
+    margin: 0 !important;
+    font-size: 12.5px !important;
+    text-align: center !important;
+    border: 1px solid var(--japandi-clay) !important;
+    border-radius: 4px !important;
+    background: #FFF !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+}
+
+.editor-receta-sub-item-unit {
+    font-size: 11px; 
+    color: #8A857C; 
+    width: 25px; 
+    text-align: left; 
+    font-weight: 500;
+}
+
+/* Modificaciones Globales para Inputs de Catálogo y Sub-recetas */
+.subreceta-item-row {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 12px; 
+    border-bottom: 1px solid #EFECE6; 
+    gap: 10px;
+}
+
+.btn-select-subreceta {
+    flex-grow: 1; 
+    cursor: pointer; 
+    text-align: left; 
+    font-size: 13.5px;
+}
+
+.btn-select-subreceta small {
+    color: #8A857C;
+}
+
+.btn-delete-subreceta-catalogo {
+    background: transparent; 
+    border: none; 
+    color: #A95A4D; 
+    cursor: pointer; 
+    padding: 5px 8px; 
+    font-size: 16px;
+}
+
+.catalogo-modal-scroll {
+    max-height: 280px; 
+    overflow-y: auto; 
+    margin-top: 10px; 
+    border: 1px solid #EFECE6; 
+    border-radius: 8px; 
+    background: #FDFCFA; 
+    padding-right: 2px;
+}
+
+/* =========================================================================
+   🛑 ARQUITECTURA DE ALERTAS Y JERARQUÍA TEXTUAL (JAPANDI MOBILE)
+   ========================================================================= */
+
+/* 1. Forzar el estilo en el botón de confirmación (Mesa Vaciar y OK) */
+.swal2-popup .swal2-actions .swal2-confirm,
+.swal2-confirm.swal2-styled,
+button.swal2-confirm {
+    background-color: #23211F !important; /* var(--japandi-dark) */
+    color: #FFFFFF !important;
+    border: none !important;
+    padding: 14px 28px !important;
+    border-radius: 50px !important;
+    font-family: var(--font-sans), sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+    box-shadow: 0 4px 12px rgba(35, 33, 31, 0.15) !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    min-width: 120px !important;
+    display: inline-block !important;
+}
+
+/* Evitar que cualquier borde nativo o herencia rompa el diseño del botón */
+.swal2-popup .swal2-actions .swal2-confirm:focus,
+button.swal2-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(35, 33, 31, 0.2) !important;
+}
+
+/* 2. Jerarquía y Separación Textual (Aplica a todas las alertas, ej: Mesa Despejada) */
+.swal2-popup .swal2-title {
+    font-family: var(--font-serif), serif !important; /* Serif elegante */
+    color: #23211F !important;
+    font-size: 24px !important;
+    font-weight: 400 !important;
+    line-height: 1.3 !important;
+    margin-top: 20px !important;   /* Espacio respecto al icono de arriba */
+    margin-bottom: 12px !important; /* Espacio de separación con el texto descriptivo */
+    padding: 0 8px !important;
+}
+
+.swal2-popup .swal2-html-container {
+    font-family: var(--font-sans), sans-serif !important;
+    color: #7A7571 !important; /* var(--japandi-muted) Color más suave para jerarquía secundario */
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    margin-top: 0 !important;
+    margin-bottom: 28px !important; /* Espacio generoso antes de llegar a las acciones/botones */
+    padding: 0 12px !important;
+}
+
+/* Contenedor de botones con margen equilibrado */
+.swal2-popup .swal2-actions {
+    margin-top: 8px !important;
+    margin-bottom: 4px !important;
+    gap: 16px !important; /* Espaciado saludable entre 'Sí, vaciar' y 'Mantener' */
+}
+
+/* --- BOTÓN CONFIGURACIÓN Y RESUMEN EN TARJETA --- */
+.btn-config-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    background-color: #FCFAF6;
+    border: 1px solid var(--japandi-clay, #E6DFD3);
+    border-radius: 12px;
+    font-family: var(--font-sans), sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--japandi-dark, #23211F);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.btn-config-trigger:hover {
+    background-color: #F3EFE6;
+}
+.costo-tuyo-rebanada {
+    padding-left: 12px;
+    margin-top: -4px;
+    margin-bottom: 12px;
+    opacity: 0.85;
+}
+.costo-tuyo-rebanada span:first-child {
+    font-size: 13px;
+    color: var(--japandi-muted, #7A7571);
+    font-style: italic;
+}
+.costo-tuyo-rebanada span:last-child {
+    font-size: 13px;
+    color: var(--japandi-dark, #23211F);
+    font-weight: 500;
+}
+.destacado-rebanada {
+    padding: 6px 12px;
+    margin-top: 4px;
+    background-color: rgba(179, 142, 117, 0.07);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+.destacado-rebanada span:first-child {
+    font-size: 13px;
+    color: #B38E75;
+    font-weight: 500;
+}
+.destacado-rebanada span:last-child {
+    font-size: 14px;
+    color: #B38E75;
+    font-weight: 600;
+}
+
+/* --- CAPA BASE DEL MODAL (OVERLAY) --- */
+.modal-config-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; /* Se usa flex para centrar el contenido */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 16px;
+    box-sizing: border-box;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* --- CLASE MAGICA PARA OCULTAR SIN FORZAMIENTOS --- */
+.modal-config-overlay.hidden {
+    display: none !important;
+}
+
+/* --- CONTENIDO INTERNO DEL MODAL --- */
+.modal-config-contenido {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.modal-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #E6DFD3;
+    padding-bottom: 10px;
+}
+.modal-config-header h3 {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--japandi-dark, #23211F);
+    margin: 0;
+}
+.btn-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--japandi-muted, #7A7571);
+    line-height: 1;
+}
+.modal-config-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-family: var(--font-sans), sans-serif;
+    font-size: 13px;
+    color: var(--japandi-dark, #23211F);
+}
+.modal-config-seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.modal-seccion-titulo {
+    font-weight: 600;
+    color: #B38E75;
+    display: block;
+    margin-bottom: 4px;
+}
+.modal-config-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-config-row input {
+    width: 80px;
+    text-align: center;
+    border: 1px solid var(--japandi-clay, #E6DFD3);
+    border-radius: 8px;
+    padding: 5px 0;
+    font-weight: 600;
+}
+.modal-config-row select {
+    width: 110px;
+    border: 1px solid var(--japandi-clay, #E6DFD3);
+    border-radius: 8px;
+    padding: 5px;
+    font-weight: 500;
+    background: #fff;
+}
+.divisor-top {
+    border-top: 1px solid #E6DFD3;
+    padding-top: 12px;
+}
+.btn-modal-save {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: var(--japandi-dark, #23211F);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-sans), sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.btn-modal-save:hover {
+    background-color: #3b3835;
+}
+
+/* =========================================================================
+   🏷️ ESTILOS PARA EL SELECTOR DINÁMICO DE MARCAS (TABLA INSUMOS)
+   ========================================================================= */
+
+/* Contenedor del selector dentro de la celda de Formato */
+.celda-formato-marca-select {
+    width: 100%;
+    min-width: 110px;
+    max-width: 140px;
+    padding: 6px 24px 6px 10px; /* Espacio derecho para la flecha custom */
+    font-family: var(--font-sans), sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--japandi-wood);
+    background-color: #FDFCFA;
+    border: 1px solid var(--japandi-clay);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    
+    /* Reseteo de flecha nativa del navegador */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Flecha estilizada minimalista Japandi */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23968F85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+/* Comportamiento al hacer Focus o Cambiar */
+.celda-formato-marca-select:focus {
+    border-color: var(--japandi-accent);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 2px rgba(184, 142, 116, 0.08);
+}
+
+/* Variante estilizada para cuando no tiene una marca asignada (Placeholder) */
+.celda-formato-marca-select.sin-marca {
+    color: var(--japandi-muted);
+    font-style: italic;
+    border-style: dashed;
+}
+
+/* Opciones internas del selector para mantener la tipografía limpia */
+.celda-formato-marca-select option {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 13px;
+    color: var(--japandi-dark);
+    background-color: #FFFFFF;
+    font-style: normal;
+}
+
+/* Ajuste fino para la celda de la tabla para que no se pegue al borde */
+#tabla-insumos td {
+    vertical-align: middle;
+}
+
+/* Corrección de alineación precisa para el selector de marcas en la descripción */
+#tabla-insumos .celda-formato-marca-select {
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+    background-color: transparent !important; /* Para que herede el fondo limpio de la fila */
+}
