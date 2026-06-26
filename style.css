@@ -748,7 +748,7 @@ button#btn-dictar-voz {
 .swal2-actions-auth { display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 12px !important; width: 100% !important; margin-top: 20px !important; }
 
 /* =========================================================================
-   📺 RESPONSIVE MEDIA QUERIES (Tablets & PC)
+   📺 RESPONSIVE MEDIA QUERIES OPTIMIZADAS (Flujo Vertical Completo)
    ========================================================================= */
 
 @media (min-width: 600px) {
@@ -762,22 +762,41 @@ button#btn-dictar-voz {
     .tarjeta { padding: 32px; }
     .fila-inputs { flex-direction: row; }
     .fila-inputs .grupo-campo { flex: 1; }
+    
+    #btn-dictar-voz.btn-icon,
+    button#btn-dictar-voz {
+        display: none !important;
+    }
 }
 
 @media (min-width: 1024px) {
-    body { padding: 48px 40px; }
-    header h1 { font-size: 32px; }
-    .contenedor-dashboard {
-        display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
-        gap: 40px;
+    body { 
+        padding: 48px 40px; /* Reducimos el margen lateral para dar más espacio a las tarjetas */
     }
-    .tarjeta { padding: 40px; }
-    .tarjeta h2 { font-size: 23px; }
+    header h1 { 
+        font-size: 32px; 
+    }
+    
+    .contenedor-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        width: 100%;
+        max-width: 1400px; /* ✨ Incrementado de 1200px a 1400px para mayor amplitud */
+        margin: 0 auto;    /* Mantiene el bloque perfectamente centrado */
+    }
+    
+    .tarjeta { 
+        padding: 40px 48px; /* Un poco más de aire interno para balancear el nuevo ancho */
+        width: 100%; 
+    }
+    
+    .tarjeta h2 { font-size: 26px; }
     th { font-size: 11px; }
-    td { padding: 18px 8px; font-size: 14px; }
+    td { padding: 18px 14px; font-size: 14px; }
+    
     .resumen-financiero { padding: 28px; }
-    .fila-resumen.destacado { font-size: 22px; }
+    .fila-resumen.destacado { font-size: 24px; }
 }
 
 /* Hover de ratón exclusivo para Escritorio */
