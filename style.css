@@ -41,9 +41,9 @@ body {
 header {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 40px;
-    padding-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 48px;
+    padding-bottom: 28px;
     border-bottom: 1px dashed var(--japandi-clay);
     text-align: center;
     align-items: center;
@@ -51,17 +51,21 @@ header {
 
 header h1 {
     font-family: var(--font-serif);
-    font-size: 26px;
+    font-size: 32px;
     font-weight: 400;
+    color: var(--japandi-dark);
     letter-spacing: -0.5px;
+    line-height: 1.2;
 }
 
 header h1 span {
-    font-size: 9px;
+  font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 0.25em;
     color: var(--japandi-accent);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     display: block;
 }
 
@@ -106,22 +110,26 @@ header h1 span {
 
 /* Cabeceras de sección elegantes unificadas */
 .tarjeta-seccion-header {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    position: relative;
 }
 
 .tarjeta-seccion-header h2 {
     font-family: var(--font-serif);
     font-size: 24px;
-    color: #1C1B1A;
-    margin: 0 0 4px 0;
+    color: var(--japandi-dark);
+    margin: 0 0 6px 0;
     font-weight: 400;
+    letter-spacing: -0.01em;
 }
 
 .tarjeta-seccion-header p {
+  font-family: var(--font-sans);
     font-size: 13px;
-    color: #7A7265;
-    line-height: 1.5;
+    color: var(--japandi-muted);
+    line-height: 1.6;
     margin: 0;
+    font-weight: 400;
 }
 
 .tarjeta.tarjeta-analisis-costo {
@@ -239,10 +247,56 @@ button[type="submit"]:active {
 .btn-exportar-presupuesto {
     margin-top: 20px;
     width: 100%;
+    background: var(--japandi-accent) !important; /* Mantiene la estética de la app */
+    box-shadow: 0 4px 15px rgba(184, 142, 116, 0.2) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-exportar-presupuesto::before {
+    content: '⟶'; /* Flecha minimalista Japandi en lugar de un icono tosco */
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 300;
+}
+
+/* --- BOTÓN PDF PREMIUM (DEBAJO) --- */
+.btn-secundario-pdf {
+    margin-top: 12px; /* Espaciado con el botón de arriba */
+    width: 100%;
+    background: transparent !important;
+    border: 1px solid var(--japandi-clay) !important;
+    color: var(--japandi-dark) !important;
+    padding: 14px;
+    border-radius: 25px; /* Misma curvatura orgánica */
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em; /* Espaciado premium de letras */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-secundario-pdf:hover {
+    background: rgba(184, 142, 116, 0.08) !important;
+    border-color: var(--japandi-accent) !important;
+}
+
+.btn-secundario-pdf::before {
+    content: '⬇';
+    font-size: 14px;
+    font-weight: 300;
 }
 
 /* --- 5. TABLAS DE AUTOR (Responsivas y unificadas) --- */
-.tabla-contenedor, .contenedor-tabla-receta, .table-responsive-receta {
+.tabla-contenedor, .table-responsive-receta {
     width: 100%;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
@@ -252,10 +306,41 @@ button[type="submit"]:active {
 }
 
 .tabla-contenedor::-webkit-scrollbar, 
-.contenedor-tabla-receta::-webkit-scrollbar, 
 .table-responsive-receta::-webkit-scrollbar {
     display: none;
 }
+
+/* ✨ SOLUCIÓN: Scroll Infinito Vertical para Mesa de Ingredientes */
+.contenedor-tabla-receta {
+    width: 100%;
+    max-height: 280px;            /* 🍰 Altura máxima fija para contener la mesa */
+    overflow-y: auto !important;   /* Activa el scroll vertical */
+    overflow-x: auto !important;   /* Mantiene compatibilidad horizontal en móviles */
+    margin-top: 24px;
+    margin-bottom: 24px;
+    padding-right: 4px;            /* Aire para que el scroll no toque el contenido */
+}
+
+/* Estilizado del Scrollbar estilo Japandi Minimalista */
+.contenedor-tabla-receta::-webkit-scrollbar {
+    display: block !important;     /* Forzamos que se vea */
+    width: 5px !important;         /* Ultra delgada y elegante */
+    height: 5px !important;
+}
+
+.contenedor-tabla-receta::-webkit-scrollbar-track {
+    background: transparent;       /* Fondo invisible para no ensuciar */
+}
+
+.contenedor-tabla-receta::-webkit-scrollbar-thumb {
+    background-color: var(--japandi-clay); /* Color arcilla suave a juego */
+    border-radius: 10px;
+}
+
+.contenedor-tabla-receta::-webkit-scrollbar-thumb:hover {
+    background-color: var(--japandi-accent); /* Mantequilla tostada al pasar el cursor */
+}
+
 
 /* Configuración de anchos para que respire idéntico al almacén */
 #tabla-receta {
@@ -429,16 +514,18 @@ td strong {
 
 .almacen-header h2 {
     font-family: var(--font-serif);
-    font-size: 1.45rem;
+    font-size: 24px;
     font-weight: 400;
     color: var(--japandi-dark);
-    margin: 0 0 4px 0;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
 }
 
 .almacen-header p {
-    font-size: 0.82rem;
+  font-family: var(--font-sans);
+    font-size: 13px;
     color: var(--japandi-muted);
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 0;
 }
 
@@ -989,51 +1076,53 @@ button#btn-dictar-voz {
 .editor-receta-sub-item {
     display: flex; 
     align-items: center; 
-    justify-content: space-between; 
-    gap: 8px; 
-    font-size: 12.5px; 
-    padding: 4px 0; 
+    justify-content: space-between; /* ✨ Empuja el texto a la izq y el input a la der */
+    gap: 16px;                     /* Espacio de seguridad */
+    font-size: 13px; 
+    padding: 10px 0;               /* Más aire vertical para legibilidad */
     border-bottom: 1px solid #FAF9F6; 
     color: #2C2A27;
 }
 
 .editor-receta-sub-item-nom {
-    flex: 1; 
+    flex: 1;                       /* Toma todo el espacio disponible de forma elástica */
+    min-width: 0;                  /* Previene rupturas extrañas de texto */
     white-space: nowrap; 
     overflow: hidden; 
-    text-overflow: ellipsis; 
+    text-overflow: ellipsis;       /* Corta elegantemente nombres muy largos */
     color: #4E4A42;
 }
 
 .editor-receta-sub-item-input-wrapper {
     display: flex; 
     align-items: center; 
-    gap: 4px; 
-    min-width: 95px; 
-    justify-content: flex-end;
+    gap: 8px;                      /* ✨ Espacio uniforme y perfecto entre input y texto */
+    justify-content: flex-end;     /* Alinea el contenido interno a la derecha */
+    flex-shrink: 0;                /* Evita que este bloque colapse */
 }
 
 .swal-insumo-interno-input {
-    width: 60px !important;
-    max-width: 60px !important;
-    height: 28px !important;
-    padding: 2px 4px !important;
+    width: 70px !important;        /* Un poco más ancho para albergar cómodamente los números */
+    max-width: 70px !important;
+    height: 32px !important;       /* Altura de botón Japandi estándar */
+    padding: 4px 6px !important;
     margin: 0 !important;
-    font-size: 12.5px !important;
+    font-size: 13px !important;
     text-align: center !important;
     border: 1px solid var(--japandi-clay) !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     background: #FFF !important;
     box-shadow: none !important;
     display: inline-block !important;
 }
 
 .editor-receta-sub-item-unit {
-    font-size: 11px; 
-    color: #8A857C; 
-    width: 25px; 
-    text-align: left; 
+    font-size: 12px; 
+    color: var(--japandi-muted); 
+    width: 35px;                  /* Ancho fijo estricto para que todas las unidades (pza, kg, g) se alineen */
+    text-align: left;             /* Alineación uniforme del texto a la izquierda */
     font-weight: 500;
+    white-space: nowrap;          /* ✨ Prohíbe terminantemente romper la línea */
 }
 
 /* Modificaciones Globales para Inputs de Catálogo y Sub-recetas */
@@ -1076,6 +1165,96 @@ button#btn-dictar-voz {
     padding-right: 2px;
 }
 
+/* --- SISTEMA DE BLOQUEO PREMIUM DE REPOSTERÍA --- */
+.contenedor-bloque3-premium {
+    position: relative;
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* Capa difuminada de restricción */
+.bloqueo-premium-overlay {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: calc(100% + 10px);
+    height: calc(100% + 10px);
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+/* Tarjeta del aviso */
+.bloqueo-premium-mensaje {
+    text-align: center;
+    background: #FFFFFF;
+    padding: 24px 16px;
+    border-radius: 16px;
+    box-shadow: 0 12px 24px rgba(44, 42, 41, 0.08);
+    border: 1px solid rgba(184, 142, 116, 0.15);
+    max-width: 92%;
+    box-sizing: border-box;
+}
+
+.icono-candado {
+    font-size: 26px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.bloqueo-premium-mensaje h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2A29;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.02em;
+}
+
+.bloqueo-premium-mensaje p {
+    color: #736E69;
+    font-size: 11.5px;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+}
+
+/* Botón Terracota de Activación */
+.btn-activar-premium-ws {
+    background: #B88E74 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    padding: 12px 18px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border-radius: 25px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(184, 142, 116, 0.25);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-activar-premium-ws:hover {
+    background: #9E745B !important;
+    transform: translateY(-1px);
+}
+
+/* Reglas utilitarias para el control dinámico */
+.dynamic-hide {
+    display: none !important;
+}
+
+.contenedor-bloque3-premium.es-premium .bloqueo-premium-overlay {
+    display: none !important;
+}
+
 /* =========================================================================
    🛑 ARQUITECTURA DE ALERTAS Y JERARQUÍA TEXTUAL (JAPANDI MOBILE)
    ========================================================================= */
@@ -1108,14 +1287,22 @@ button.swal2-confirm:focus {
 }
 
 /* 2. Jerarquía y Separación Textual (Aplica a todas las alertas, ej: Mesa Despejada) */
+.swal2-title-custom, .swal2-title-mic { 
+    font-family: var(--font-serif) !important; 
+    font-weight: 400 !important; 
+    font-size: 24px !important; 
+    color: var(--japandi-dark) !important;
+    letter-spacing: -0.01em !important;
+}
+
 .swal2-popup .swal2-title {
-    font-family: var(--font-serif), serif !important; /* Serif elegante */
-    color: #23211F !important;
+    font-family: var(--font-serif), serif !important; 
+    color: var(--japandi-dark) !important;
     font-size: 24px !important;
     font-weight: 400 !important;
     line-height: 1.3 !important;
-    margin-top: 20px !important;   /* Espacio respecto al icono de arriba */
-    margin-bottom: 12px !important; /* Espacio de separación con el texto descriptivo */
+    margin-top: 20px !important;   
+    margin-bottom: 12px !important; 
     padding: 0 8px !important;
 }
 
@@ -1236,9 +1423,10 @@ button.swal2-confirm:focus {
 }
 .modal-config-header h3 {
     font-family: var(--font-sans), sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--japandi-dark, #23211F);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--japandi-dark);
+    letter-spacing: -0.01em;
     margin: 0;
 }
 .btn-modal-close {
@@ -1263,10 +1451,14 @@ button.swal2-confirm:focus {
     gap: 8px;
 }
 .modal-seccion-titulo {
+    font-family: var(--font-sans);
+    font-size: 11px;
     font-weight: 600;
-    color: #B38E75;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--japandi-accent);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 .modal-config-row {
     display: flex;
@@ -1375,4 +1567,368 @@ button.swal2-confirm:focus {
     padding-left: 0 !important;
     text-indent: 0 !important;
     background-color: transparent !important; /* Para que herede el fondo limpio de la fila */
+}
+
+/* ==========================================
+   SISTEMA DE TOOLTIPS NEXI - CARBÓN TRASLÚCIDO MIXTO
+   ========================================== */
+
+html, body {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Evita rupturas en los títulos con íconos */
+.almacen-header-flex h2,
+.tarjeta-seccion-header h2 {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: wrap;
+}
+
+/* Contenedor del tooltip (Ancla rígida) */
+.tooltip-container {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+  cursor: help !important;
+  vertical-align: middle !important;
+  text-transform: none !important;
+  font-style: normal !important;
+}
+
+/* --- ESTILO DE LOS ÍCONOS (ⓘ) --- */
+
+/* Íconos generales de la app */
+.tooltip-container .tooltip-icon,
+.destacado-rebanada .tooltip-icon {
+  font-size: 0.75em !important; 
+  color: #a88c74 !important; 
+  fill: #a88c74 !important;
+  stroke: #a88c74 !important;
+  opacity: 0.8 !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  line-height: 1 !important;
+  padding: 2px 4px !important;
+  display: inline-block !important;
+  filter: none !important;
+}
+
+/* El ícono de "Costo por Rebanada" se queda igual (atenuado) */
+.costo-tuyo-rebanada .tooltip-icon {
+  font-size: 0.75em !important;
+  color: inherit !important; 
+  opacity: 0.6 !important;   
+  font-style: normal !important;
+  display: inline-block !important;
+}
+
+
+/* --- ESTILO DE LOS GLOBOS FLOTANTES --- */
+
+/* Globos Generales: Ahora con un toque sutil de transparencia */
+.tooltip-container .tooltip-text,
+.destacado-rebanada .tooltip-text {
+  visibility: hidden;
+  position: absolute !important;
+  bottom: 140% !important; 
+  left: 50% !important;    
+  transform: translateX(-50%) !important; 
+  
+  /* Fondo carbón translúcido (85% opacidad) con desenfoque de fondo */
+  background-color: rgba(46, 42, 39, 0.85) !important; 
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+  
+  color: #ffffff !important;             
+  font-size: 8.5pt !important;           
+  font-weight: 400 !important;           
+  font-style: normal !important;         
+  text-transform: none !important;       
+  letter-spacing: normal !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  line-height: 1.35 !important;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2) !important;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 99999 !important; 
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+  width: 160px !important;            
+}
+
+/* 🛑 EXCEPCIÓN INTEGRAL: "Costo por Rebanada" se queda 100% sólido y oscuro */
+.costo-tuyo-rebanada .tooltip-text {
+  visibility: hidden;
+  position: absolute !important;
+  bottom: 140% !important; 
+  left: 50% !important;    
+  transform: translateX(-50%) !important; 
+  
+  /* Sólido original sin transparencias ni filtros */
+  background-color: #2e2a27 !important; 
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  color: #ffffff !important;             
+  font-size: 8.5pt !important;           
+  font-weight: 400 !important;           
+  font-style: normal !important;         
+  text-transform: none !important;       
+  letter-spacing: normal !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  line-height: 1.35 !important;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25) !important;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 99999 !important; 
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+  width: 160px !important;   
+}
+
+
+/* --- FLECHAS DE LOS GLOBOS --- */
+
+/* Flecha general adaptada al fondo translúcido */
+.tooltip-container .tooltip-text::after,
+.destacado-rebanada .tooltip-text::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border-width: 5px !important;
+  border-style: solid !important;
+  border-color: rgba(46, 42, 39, 0.75) transparent transparent transparent !important;
+}
+
+/* Flecha de "Costo por Rebanada" adaptada a su fondo sólido original */
+.costo-tuyo-rebanada .tooltip-text::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border-width: 5px !important;
+  border-style: solid !important;
+  border-color: #2e2a27 transparent transparent transparent !important;
+}
+
+
+/* --- DISPARADORES DE HOVER --- */
+
+.tooltip-container:hover .tooltip-text,
+.tooltip-container.active .tooltip-text {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ajustes responsivos */
+@media (min-width: 768px) {
+  .tooltip-container .tooltip-text,
+  .destacado-rebanada .tooltip-text,
+  .costo-tuyo-rebanada .tooltip-text {
+    width: 220px !important; 
+  }
+}
+
+/* Contenedores generales de los pasos */
+.modal-categorias-container, .modal-recetas-container {
+    padding: 10px 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* [PUNTO 1] Fila de categoría con Estilo Premium y Limpio */
+.categoria-premium-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background-color: #fcfbfa; /* Fondo crema suave */
+    border: 1px solid #e6e1da; /* Borde ultra sutil */
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.categoria-premium-row:hover {
+    background-color: #f5f0e6;
+    border-color: #c5bba8;
+    transform: translateY(-1px);
+}
+
+.categoria-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.categoria-name {
+    font-family: inherit;
+    font-weight: 600;
+    color: #2c2a29;
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+}
+
+.categoria-badge {
+    font-size: 0.8rem;
+    color: #8c857b;
+    background: #f0ede6;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* Tarjetas de recetas dentro del paso 2 */
+.receta-premium-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e8e5e0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.receta-premium-card:hover {
+    border-color: #bcada4;
+}
+
+.receta-click-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.receta-detalles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.receta-nombre {
+    color: #2c2a29;
+    font-size: 0.95rem;
+}
+
+.receta-costo {
+    font-size: 0.82rem;
+    color: #7c7267;
+}
+
+/* Botón eliminar integrado elegantemente */
+.btn-eliminar-receta-card {
+    background: transparent;
+    border: none;
+    padding: 0 16px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    height: 100%;
+    color: #bd5b4c;
+    transition: background-color 0.2s;
+}
+
+.btn-eliminar-receta-card:hover {
+    background-color: #fff1f0;
+}
+
+/* Botón Volver */
+.btn-volver-premium {
+    background: transparent;
+    border: none;
+    color: #8c857b;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    align-self: center;
+}
+
+.btn-volver-premium:hover {
+    color: #2c2a29;
+}
+
+/* Ajustes globales de la alerta SweetAlert */
+.premium-popup-style {
+    border-radius: 20px !important;
+    padding: 24px !important;
+}
+.premium-title-style {
+    font-family: serif !important; /* Mantiene la coherencia de tu cabecera "02. Mesa" */
+    color: #2c2a29 !important;
+    font-size: 1.4rem !important;
+    border-bottom: 1px solid #f0ede6;
+    padding-bottom: 12px !important;
+}
+
+/* --- MEJORAS PREMIUM PARA EL MODAL DE CARGAR RECETAS --- */
+
+/* Contenedor del cuerpo para dar una separación elegante a los elementos */
+#cuerpo-modal-cargar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 5px 2px;
+}
+
+/* Animación sutil de escala al pasar el cursor sobre las categorías o recetas */
+#cuerpo-modal-cargar button {
+    transition: all 0.2s ease-in-out !important;
+}
+
+#cuerpo-modal-cargar button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Personalización premium para la alerta SweetAlert de eliminación */
+.premium-popup-style {
+    border-radius: 16px !important;
+    padding: 24px !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* =========================================================================
+   🛡️ ARQUITECTURA DE CAPAS (JERARQUÍA Z-INDEX OPTIMIZADA)
+   ========================================================================= */
+
+/* SweetAlert2 se posiciona justo encima del overlay nativo (2000), sin romper la escala */
+.swal2-container {
+    z-index: 2100 !important;
+}
+
+/* Ajustes visuales para el nuevo selector de categorías en el Editor */
+.swal2-html-container select {
+    width: 100% !important;
+    padding: 12px 14px !important;
+    margin: 8px 0 14px 0 !important;
+    border: 1px solid var(--japandi-clay) !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-family: var(--font-sans) !important;
+    background-color: #FFF !important;
+    color: var(--japandi-dark) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: var(--transition-smooth);
+    appearance: auto; /* Permite la flecha nativa del sistema */
+}
+
+.swal2-html-container select:focus {
+    border-color: var(--japandi-accent) !important;
+    box-shadow: 0 0 0 3px rgba(184, 142, 116, 0.08) !important;
 }

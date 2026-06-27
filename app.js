@@ -4,12 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ⚙️ PANEL DE CONFIGURACIÓN GLOBAL (EDITABLE)
     // =================================================================********
     const CONFIG = {
+        // ⚠️ ADVERTENCIA: Se recomienda mover estas llaves a variables de entorno (.env) en producción
         SUPABASE_URL: "https://mpvhgukapfqqavxhjcof.supabase.co", 
         SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdmhndWthcGZxcWF2eGhqY29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NzI3NDcsImV4cCI6MjA5NzU0ODc0N30.TlRjs3v0y85QvCin9FmUYOOMlWMutgFm_LyGRA5FJHM",
 
         PORCENTAJE_MERMA: 0.05,         
         PORCENTAJE_GASTOS_FIJOS: 0.10,   
-        MARGEN_UTILIDAD_DEFAULT: 30, 
+        MARGEN_UTILIDAD_DEFAULT: 60, 
         ITEMS_POR_PAGINA: 5,             
 
         AUTH: {
@@ -241,18 +242,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nombre = esRegistro ? document.getElementById('modal-auth-nombre').value.trim() : '';
 
                 if (!email || !password || (esRegistro && !nombre)) {
-                    Swal.showValidationMessage('Por favor, rellena todos los campos.');
+                    Swal.fire.showValidationMessage('Por favor, rellena todos los campos.');
                     return false;
                 }
 
                 if (esRegistro) {
                     const confirmPassword = document.getElementById('modal-auth-password-confirm').value;
                     if (password !== confirmPassword) {
-                        Swal.showValidationMessage('Las contraseñas no coinciden.');
+                        Swal.fire.showValidationMessage('Las contraseñas no coinciden.');
                         return false;
                     }
                     if (password.length < 6) {
-                        Swal.showValidationMessage('La contraseña debe tener al menos 6 caracteres.');
+                        Swal.fire.showValidationMessage('La contraseña debe tener al menos 6 caracteres.');
                         return false;
                     }
                 }
@@ -292,26 +293,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 🔍 BUSCADOR EN TIEMPO REAL
+    // 🔍 BUSCADOR UNIFICADO EN TIEMPO REAL
     // ==========================================
     if (inputBuscar && listaResultados) {
         inputBuscar.addEventListener('input', function() {
             const terminoBusqueda = this.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (terminoBusqueda === '') { listaResultados.style.display = 'none'; return; }
 
-            const itemsCompatibles = listaItems.filter(item => item.tipo === tipoRecetaActivo);
-            
-            const filtrados = itemsCompatibles.filter(item => {
+            const filtrados = listaItems.filter(item => {
                 const nom = item.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 return terminoBusqueda.length === 1 ? nom.startsWith(terminoBusqueda) : nom.includes(terminoBusqueda);
             });
 
             if (filtrados.length > 0) {
-                listaResultados.innerHTML = filtrados.map(item => `
-                    <div class="opcion-insumo-lista" data-id="${item.id}">
-                        📌 <b>${escapeHTML(item.nombre)}</b> <span>(${item.marca !== 'Genérico' ? escapeHTML(item.marca) : item.unidadVisual})</span>
-                    </div>
-                `).join('');
+                listaResultados.innerHTML = filtrados.map(item => {
+                    const tagTipo = item.tipo === 'consumible' ? '📦 ' : '📌 ';
+                    return `
+                        <div class="opcion-insumo-lista" data-id="${item.id}">
+                            ${tagTipo}<b>${escapeHTML(item.nombre)}</b> <span>(${item.marca !== 'Genérico' ? escapeHTML(item.marca) : (item.unidadVisual || 'Fórmula')})</span>
+                        </div>
+                    `;
+                }).join('');
                 listaResultados.style.display = 'block';
             } else {
                 listaResultados.innerHTML = `<div class="buscador-vacio-msj">No se encontraron elementos</div>`;
@@ -347,12 +349,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function configurarModulo() {
         if (formInsumo) formInsumo.reset();
+        
+        // CORRECCIÓN: Evitar caídas por variables no declaradas (unitsInsumos / unitsConsumibles)
+        const dUnitsInsumos = window.unitsInsumos || unidadesInsumos;
+        const dUnitsConsumibles = window.unitsConsumibles || unidadesConsumibles;
+
         if (tipoActivo === 'insumo') {
             if (wrapperMarca) wrapperMarca.style.display = 'flex';
-            if (insumoUnidad) insumoUnidad.innerHTML = unidadesInsumos;
+            if (insumoUnidad) insumoUnidad.innerHTML = dUnitsInsumos;
         } else {
             if (wrapperMarca) wrapperMarca.style.display = 'none'; 
-            if (insumoUnidad) insumoUnidad.innerHTML = unidadesConsumibles;
+            if (insumoUnidad) insumoUnidad.innerHTML = dUnitsConsumibles;
         }
         
         const itemsFiltrados = listaItems.filter(item => item.tipo === tipoActivo);
@@ -361,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         actualizarTablaInventario();
 
-        // ✨ ADICIÓN: Sincronizar los campos del modal al arrancar el módulo
         if (document.getElementById('input-mano-obra')) document.getElementById('input-mano-obra').value = parametrosComerciales.manoObraPorHora || 0;
         if (document.getElementById('select-dificultad')) document.getElementById('select-dificultad').value = parametrosComerciales.dificultad || "facil";
         if (document.getElementById('input-distancia')) document.getElementById('input-distancia').value = parametrosComerciales.distanciaIdaKm || 0;
@@ -432,101 +438,100 @@ document.addEventListener('DOMContentLoaded', () => {
         if (paginaActual < totalPaginas) { paginaActual++; actualizarTablaInventario(); }
     });
 
-        function actualizarTablaInventario() {
-    if (!tablaInsumosBody) return;
-    tablaInsumosBody.innerHTML = '';
-    let itemsFiltrados = listaItems.filter(item => item.tipo === tipoActivo);
+    function actualizarTablaInventario() {
+        if (!tablaInsumosBody) return;
+        tablaInsumosBody.innerHTML = '';
+        let itemsFiltrados = listaItems.filter(item => item.tipo === tipoActivo);
 
-    // =========================================================================
-    // 🔄 NUEVA LÓGICA: AGRUPAR VARIANTES POR NOMBRE DE PRODUCTO
-    // =========================================================================
-    const productosAgrupados = {};
-    
-    itemsFiltrados.forEach(item => {
-        const nombreClave = item.nombre.toLowerCase().trim();
-        if (!productosAgrupados[nombreClave]) {
-            productosAgrupados[nombreClave] = [];
-        }
-        productosAgrupados[nombreClave].push(item);
-    });
-
-    // Convertimos el objeto agrupado en una lista para poder paginarla
-    const listaAgrupada = Object.values(productosAgrupados);
-
-    const totalPaginas = Math.ceil(listaAgrupada.length / CONFIG.ITEMS_POR_PAGINA) || 1;
-    if (paginaActual > totalPaginas) paginaActual = totalPaginas; 
-
-    if (listaAgrupada.length === 0) {
-        tablaInsumosBody.innerHTML = `<tr><td colspan="5" class="txt-tabla-vacia">No se encontró ningún artículo...</td></tr>`;
-        if (pagInfoTexto) pagInfoTexto.textContent = "1 de 1";
-        return;
-    }
-
-    const inicio = (paginaActual - 1) * CONFIG.ITEMS_POR_PAGINA;
-    const itemsPagina = listaAgrupada.slice(inicio, inicio + CONFIG.ITEMS_POR_PAGINA);
-
-    itemsPagina.forEach(grupo => {
-        // Tomamos la primera variante por defecto para rellenar la fila inicialmente
-        const varianteDefecto = grupo[0];
-        const tieneVariasMarcas = grupo.length > 1;
-
-        const fila = document.createElement('tr');
-        fila.className = "fila-producto-agrupado";
+        const productosAgrupados = {};
         
-        // Construimos el selector de marcas si tiene más de una variante, si no, texto plano
-        let marcaCeldaHTML = '';
-        if (tieneVariasMarcas) {
-            marcaCeldaHTML = `
-                <select class="celda-formato-marca-select" style="padding-left: 0; text-indent: 0; margin-top: 4px; border: none; background-color: transparent; background-position: right center; width: auto; min-width: 80px; font-size: 13px; color: var(--japandi-wood);">
-                    ${grupo.map(v => `<option value="${v.id}">${escapeHTML(v.marca)}</option>`).join('')}
-                </select>
+        itemsFiltrados.forEach(item => {
+            const nombreClave = item.nombre.toLowerCase().trim();
+            if (!productosAgrupados[nombreClave]) {
+                productosAgrupados[nombreClave] = [];
+            }
+            productosAgrupados[nombreClave].push(item);
+        });
+
+        const listaAgrupada = Object.values(productosAgrupados);
+        const totalPaginas = Math.ceil(listaAgrupada.length / CONFIG.ITEMS_POR_PAGINA) || 1;
+
+        if (listaAgrupada.length === 0) {
+            tablaInsumosBody.innerHTML = `<tr><td colspan="5" class="txt-tabla-vacia">No se encontró ningún artículo...</td></tr>`;
+            if (pagInfoTexto) pagInfoTexto.textContent = "1 de 1";
+            return;
+        }
+
+        const inicio = (paginaActual - 1) * CONFIG.ITEMS_POR_PAGINA;
+        const itemsPagina = listaAgrupada.slice(inicio, inicio + CONFIG.ITEMS_POR_PAGINA);
+
+        itemsPagina.forEach(grupo => {
+            const varianteDefecto = grupo[0];
+            const tieneVariasMarcas = grupo.length > 1;
+
+            const fila = document.createElement('tr');
+            fila.className = "fila-producto-agrupado";
+            
+            let marcaCeldaHTML = '';
+            if (tieneVariasMarcas) {
+                marcaCeldaHTML = `
+                    <select class="celda-formato-marca-select" style="padding-left: 0; text-indent: 0; margin-top: 4px; border: none; background-color: transparent; background-position: right center; width: auto; min-width: 80px; font-size: 13px; color: var(--japandi-wood);">
+                        ${grupo.map(v => `<option value="${v.id}">${escapeHTML(v.marca)}</option>`).join('')}
+                    </select>
+                `;
+            } else {
+                marcaCeldaHTML = `<small style="color:var(--japandi-muted); display: block; margin-top: 4px;">${escapeHTML(varianteDefecto?.marca || varianteDefecto.marca)}</small>`;
+            }
+
+            let unidadVisualLimpia = varianteDefecto.unidadVisual || 'pza';
+            if (unidadVisualLimpia.toLowerCase().includes('piez')) {
+                unidadVisualLimpia = 'pza';
+            }
+
+            fila.innerHTML = `
+                <td>
+                    <strong>${escapeHTML(varianteDefecto.nombre)}</strong> <br>
+                    <div class="contenedor-marca-dinamica" style="margin-left: 0; padding-left: 0;">${marcaCeldaHTML}</div>
+                </td>
+                <td class="celda-precio">$${varianteDefecto.precio.toFixed(2)}</td>
+                <td class="celda-cantidad">${varianteDefecto.cantidadOriginal} ${unidadVisualLimpia}</td>
+                <td class="text-center celda-costo">$${varianteDefecto.costoUnitario.toFixed(2)}</td>
+                <td class="text-right">
+                    <div class="actions-cell">
+                        <button type="button" class="btn-icon btn-edit-trigger" data-id="${varianteDefecto.id}"><i data-lucide="edit-3"></i></button>
+                        <button type="button" class="btn-icon delete btn-delete-trigger" data-id="${varianteDefecto.id}"><i data-lucide="trash-2"></i></button>
+                    </div>
+                </td>
             `;
-        } else {
-            marcaCeldaHTML = `<small style="color:var(--japandi-muted); display: block; margin-top: 4px;">${escapeHTML(varianteDefecto.marca)}</small>`;
-        }
 
-        fila.innerHTML = `
-            <td>
-                <strong>${escapeHTML(varianteDefecto.nombre)}</strong> <br>
-                <div class="contenedor-marca-dinamica" style="margin-left: 0; padding-left: 0;">${marcaCeldaHTML}</div>
-            </td>
-            <td class="celda-precio">$${varianteDefecto.precio.toFixed(2)}</td>
-            <td class="celda-cantidad">${varianteDefecto.cantidadOriginal} ${varianteDefecto.unidadVisual}</td>
-            <td class="text-center celda-costo">$${varianteDefecto.costoUnitario.toFixed(4)}</td>
-            <td class="text-right">
-                <div class="actions-cell">
-                    <button type="button" class="btn-icon btn-edit-trigger" data-id="${varianteDefecto.id}"><i data-lucide="edit-3"></i></button>
-                    <button type="button" class="btn-icon delete btn-delete-trigger" data-id="${varianteDefecto.id}"><i data-lucide="trash-2"></i></button>
-                </div>
-            </td>
-        `;
-
-        // Escuchador de eventos en caso de que cambie la selección de marca en esta fila
-        if (tieneVariasMarcas) {
-            const selectElement = fila.querySelector('.celda-formato-marca-select');
-            selectElement.addEventListener('change', function() {
-                const idSeleccionado = this.value;
-                const varianteSeleccionada = grupo.find(v => v.id === idSeleccionado);
-                
-                if (varianteSeleccionada) {
-                    // Actualizamos dinámicamente los campos de la fila sin recargar
-                    fila.querySelector('.celda-precio').textContent = `$${varianteSeleccionada.precio.toFixed(2)}`;
-                    fila.querySelector('.celda-cantidad').textContent = `${varianteSeleccionada.cantidadOriginal} ${varianteSeleccionada.unidadVisual}`;
-                    fila.querySelector('.celda-costo').textContent = `$${varianteSeleccionada.costoUnitario.toFixed(4)}`;
+            if (tieneVariasMarcas) {
+                const selectElement = fila.querySelector('.celda-formato-marca-select');
+                selectElement.addEventListener('change', function() {
+                    const idSeleccionado = this.value;
+                    const varianteSeleccionada = grupo.find(v => v.id === idSeleccionado);
                     
-                    // Muy importante: actualizamos el ID en los botones de acción para que alteren al elemento correcto
-                    fila.querySelector('.btn-edit-trigger').dataset.id = varianteSeleccionada.id;
-                    fila.querySelector('.btn-delete-trigger').dataset.id = varianteSeleccionada.id;
-                }
-            });
-        }
+                    if (varianteSeleccionada) {
+                        let unidadCambioLimpia = varianteSeleccionada.unidadVisual || 'pza';
+                        if (unidadCambioLimpia.toLowerCase().includes('piez')) {
+                            unidadCambioLimpia = 'pza';
+                        }
 
-        tablaInsumosBody.appendChild(fila);
-    });
+                        fila.querySelector('.celda-precio').textContent = `$${varianteSeleccionada.precio.toFixed(2)}`;
+                        fila.querySelector('.celda-cantidad').textContent = `${varianteSeleccionada.cantidadOriginal} ${unidadCambioLimpia}`;
+                        fila.querySelector('.celda-costo').textContent = `$${varianteSeleccionada.costoUnitario.toFixed(2)}`;
+                        
+                        fila.querySelector('.btn-edit-trigger').dataset.id = varianteSeleccionada.id;
+                        fila.querySelector('.btn-delete-trigger').dataset.id = varianteSeleccionada.id;
+                    }
+                });
+            }
 
-    if (pagInfoTexto) pagInfoTexto.textContent = `${paginaActual} de ${totalPaginas}`;
-    renderizarIconosSeguro();
-}
+            tablaInsumosBody.appendChild(fila);
+        });
+
+        if (pagInfoTexto) pagInfoTexto.textContent = `${paginaActual} de ${totalPaginas}`;
+        renderizarIconosSeguro();
+    }
 
     if (tablaInsumosBody) {
         tablaInsumosBody.addEventListener('click', (e) => {
@@ -557,72 +562,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function abrirModalEdicion(id) {
-        const item = listaItems.find(i => i.id === id);
-        if (!item) return;
+    const item = listaItems.find(i => i.id === id);
+    if (!item) return;
 
-        const esInsumo = item.tipo === 'insumo';
+    const esInsumo = item.tipo === 'insumo';
 
-        Swal.fire({
-            title: 'Editar Elemento',
-            html: `
-                <div style="text-align: left;">
-                    <label class="swal2-label-custom">Nombre del Elemento</label>
-                    <input id="swal-nombre" class="swal2-input-custom" value="${escapeHTML(item.nombre)}">
-                    ${esInsumo ? `
-                    <label class="swal2-label-custom">Marca o Molino</label>
-                    <input id="swal-marca" class="swal2-input-custom" value="${escapeHTML(item.marca || '')}">
-                    ` : `<input id="swal-marca" type="hidden" value="Genérico">`}
-                    <label class="swal2-label-custom">Precio de Adquisición ($)</label>
-                    <input id="swal-precio" type="number" step="any" class="swal2-input-custom" value="${item.precio}">
-                    <label class="swal2-label-custom">Cantidad Contenida (${item.unidadOriginal})</label>
-                    <input id="swal-cantidad" type="number" step="any" class="swal2-input-custom" value="${item.cantidadOriginal}">
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            customClass: { popup: 'swal2-popup-custom', title: 'swal2-title-custom', confirmButton: 'swal2-confirm-custom', cancelButton: 'swal2-cancel-custom' },
-            preConfirm: () => {
-                const nombre = document.getElementById('swal-nombre').value.trim();
-                const marca = document.getElementById('swal-marca').value.trim();
-                const precio = parseFloat(document.getElementById('swal-precio').value);
-                const cantidad = parseFloat(document.getElementById('swal-cantidad').value);
+    Swal.fire({
+        title: 'Editar Elemento',
+        html: `
+            <div style="text-align: left;">
+                <label class="swal2-label-custom">Nombre del Elemento</label>
+                <input id="swal-nombre" class="swal2-input-custom" value="${escapeHTML(item.nombre)}">
+                
+                <label class="swal2-label-custom">Tipo (Categoría de tabla)</label>
+                <select id="swal-tipo" class="swal2-input-custom">
+                    <option value="insumo" ${item.tipo === 'insumo' ? 'selected' : ''}>Insumo (Pestaña 1)</option>
+                    <option value="consumible" ${item.tipo === 'consumible' ? 'selected' : ''}>Consumible (Pestaña 2)</option>
+                </select>
 
-                if (!nombre || (esInsumo && !marca) || isNaN(precio) || precio < 0 || isNaN(cantidad) || cantidad <= 0) {
-                    Swal.showValidationMessage('Por favor rellene los campos con valores correctos.');
-                    return false;
-                }
-                return { nombre, marca, precio, cantidad };
+                ${esInsumo ? `
+                <label class="swal2-label-custom">Marca o Molino</label>
+                <input id="swal-marca" class="swal2-input-custom" value="${escapeHTML(item.marca || '')}">
+                ` : `<input id="swal-marca" type="hidden" value="Genérico">`}
+                
+                <label class="swal2-label-custom">Precio ($)</label>
+                <input id="swal-precio" type="number" step="any" class="swal2-input-custom" value="${item.precio}">
+                <label class="swal2-label-custom">Cantidad</label>
+                <input id="swal-cantidad" type="number" step="any" class="swal2-input-custom" value="${item.cantidadOriginal}">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        preConfirm: () => {
+            return { 
+                nombre: document.getElementById('swal-nombre').value.trim(),
+                marca: document.getElementById('swal-marca').value.trim(),
+                nuevoTipo: document.getElementById('swal-tipo').value, // <-- Capturamos el cambio de tabla
+                precio: parseFloat(document.getElementById('swal-precio').value),
+                cantidad: parseFloat(document.getElementById('swal-cantidad').value)
+            };
+        }
+    }).then(async (res) => {
+        if (res.isConfirmed) {
+            const index = listaItems.findIndex(i => i.id === id);
+            if (index !== -1) {
+                // Actualizamos los datos
+                listaItems[index].nombre = res.value.nombre;
+                listaItems[index].marca = res.value.marca;
+                listaItems[index].tipo = res.value.nuevoTipo; // <--- AQUÍ OCURRE LA MAGIA
+                listaItems[index].precio = res.value.precio;
+                listaItems[index].cantidadOriginal = res.value.cantidad;
+                
+                // Recalculamos costo unitario
+                let cantidadNormalizada = (['kilo', 'litro', 'kg', 'L'].includes(listaItems[index].unidadOriginal)) ? res.value.cantidad * 1000 : res.value.cantidad;
+                listaItems[index].costoUnitario = res.value.precio / (cantidadNormalizada || 1);
+
+                await subirDatosNube();
+                actualizarInstanciasLocales(); // Esto llama a actualizarTablaInventario y el filtro oculta el item de la tabla actual
             }
-        }).then(async (res) => {
-            if (res.isConfirmed) {
-                const index = listaItems.findIndex(i => i.id === id);
-                if (index !== -1) {
-                    listaItems[index].nombre = res.value.nombre;
-                    listaItems[index].marca = res.value.marca;
-                    listaItems[index].precio = res.value.precio;
-                    listaItems[index].cantidadOriginal = res.value.cantidad;
+        }
+    });
+}
 
-                    let cantidadNormalizada = res.value.cantidad;
-                    if (['kilo', 'litro', 'kg', 'L'].includes(listaItems[index].unidadOriginal)) {
-                        cantidadNormalizada = res.value.cantidad * 1000;
-                    }
-                    
-                    listaItems[index].costoUnitario = res.value.precio / (cantidadNormalizada || 1);
-                    
-                    listaReceta.forEach(r => {
-                        if (r.itemIdOriginal === id) {
-                            r.nombre = res.value.nombre;
-                            r.costoProporcional = listaItems[index].costoUnitario * r.gridCantidad;
-                        }
-                    });
-
-                    await subirDatosNube();
-                    actualizarInstanciasLocales();
-                }
-            }
-        });
-    }
 
     if (tabInsumos) tabInsumos.addEventListener('click', () => { tipoActivo = 'insumo'; tipoRecetaActivo = 'insumo'; tabInsumos.classList.add('active'); tabConsumibles.classList.remove('active'); configurarModulo(); });
     if (tabConsumibles) tabConsumibles.addEventListener('click', () => { tipoActivo = 'consumible'; tipoRecetaActivo = 'consumible'; tabConsumibles.classList.add('active'); tabInsumos.classList.remove('active'); configurarModulo(); });
@@ -640,6 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const unidadDeterminada = insumoSeleccionadoPorBuscador.isSubReceta 
+                ? (insumoSeleccionadoPorBuscador.unidadVisual || 'Fórmula')
+                : (insumoSeleccionadoPorBuscador.unidadVisual === 'kg' ? 'gr' : insumoSeleccionadoPorBuscador.unidadVisual);
+
             const nuevoIngrediente = {
                 id: Date.now().toString(),
                 itemIdOriginal: insumoSeleccionadoPorBuscador.id, 
@@ -648,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tipo: insumoSeleccionadoPorBuscador.tipo,
                 isSubReceta: insumoSeleccionadoPorBuscador.isSubReceta || false,
                 ingredientesInternos: insumoSeleccionadoPorBuscador.ingredientesInternos || null,
-                unidadVisual: insumoSeleccionadoPorBuscador.unidadVisual === 'kg' ? 'gr' : insumoSeleccionadoPorBuscador.unidadVisual,
+                unidadVisual: unidadDeterminada,
                 costoProporcional: insumoSeleccionadoPorBuscador.costoUnitario * cantidadUsada
             };
 
@@ -675,9 +680,18 @@ document.addEventListener('DOMContentLoaded', () => {
             fila.className = "fila-receta-item";
             const prefijoSubReceta = item.isSubReceta ? `<span>🎨 <b>${escapeHTML(item.nombre)}</b></span>` : `<strong>${escapeHTML(item.nombre)}</strong>`;
             
+            let unidadLimpia = '';
+            if (!item.isSubReceta) {
+                unidadLimpia = item.unidadVisual && item.unidadVisual !== 'undefined' ? item.unidadVisual : 'pza';
+                if (unidadLimpia.toLowerCase().includes('piez')) {
+                    unidadLimpia = 'pza';
+                }
+                unidadLimpia = ' ' + unidadLimpia;
+            }
+
             fila.innerHTML = `
                 <td>${prefijoSubReceta}</td>
-                <td><span>${item.gridCantidad} ${item.unidadVisual}</span></td>
+                <td><span>${item.gridCantidad}${unidadLimpia}</span></td>
                 <td><span class="fila-receta-item-costo">$${item.costoProporcional.toFixed(2)}</span></td>
                 <td class="text-right">
                     <div class="actions-cell">
@@ -712,15 +726,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="editor-receta-sub-box">
                             <span class="editor-receta-sub-titulo">Editar Insumos Ligados:</span>
                             <div class="editor-receta-sub-scroll">
-                                ${ingrediente.ingredientesInternos.map((insumoInterno, index) => `
+                                ${ingrediente.ingredientesInternos.map((insumoInterno, index) => {
+                                    const unitInterno = insumoInterno.unidadVisual && insumoInterno.unidadVisual !== 'undefined' ? insumoInterno.unidadVisual : 'Fórmula';
+                                    return `
                                     <div class="editor-receta-sub-item">
                                         <span class="editor-receta-sub-item-nom">🌾 ${escapeHTML(insumoInterno.nombre)}</span>
                                         <div class="editor-receta-sub-item-input-wrapper">
                                             <input type="number" step="any" class="swal-insumo-interno-input" data-index="${index}" value="${insumoInterno.gridCantidad}">
-                                            <span class="editor-receta-sub-item-unit">${insumoInterno.unidadVisual}</span>
+                                            <span class="editor-receta-sub-item-unit">${unitInterno}</span>
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     `;
@@ -742,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     preConfirm: () => {
                         const nuevaCantGeneral = parseFloat(document.getElementById('swal-receta-cantidad-input').value);
                         if (isNaN(nuevaCantGeneral) || nuevaCantGeneral <= 0) {
-                            Swal.showValidationMessage('Por favor ingresa una dosificación general válida.');
+                            Swal.fire.showValidationMessage('Por favor ingresa una dosificación general válida.');
                             return false;
                         }
 
@@ -754,7 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const idx = parseInt(input.dataset.index);
                                 const valInterno = parseFloat(input.value);
                                 if (isNaN(valInterno) || valInterno <= 0) {
-                                    Swal.showValidationMessage('Las cantidades de insumos deben ser mayores a 0.');
+                                    Swal.fire.showValidationMessage('Las cantidades de insumos deben ser mayores a 0.');
                                     return false;
                                 }
                                 insumosModificados.push({ index: idx, nuevaCantidad: valInterno });
@@ -777,7 +794,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             ingrediente.gridCantidad = nuevaCantGeneral;
                             ingrediente.costoProporcional = nuevoCostoBaseSubreceta * nuevaCantGeneral;
                         } else {
-                            const costoUnitarioBase = ingrediente.costoProporcional / ingrediente.gridCantidad;
+                            // MEJORA: Buscar costo unitario directo de la lista maestra para evitar corrupción de precio en cascada
+                            const masterItem = listaItems.find(i => i.id === ingrediente.itemIdOriginal);
+                            const costoUnitarioBase = masterItem ? masterItem.costoUnitario : (ingrediente.costoProporcional / ingrediente.gridCantidad);
                             ingrediente.gridCantidad = nuevaCantGeneral;
                             ingrediente.costoProporcional = costoUnitarioBase * nuevaCantGeneral;
                         }
@@ -789,103 +808,388 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // CONTROLADORES DE ACCIONES CATÁLOGO
+    // =================================================================********
+    // 🗂️ CONTROLADORES DE ACCIONES CATÁLOGO (CON SOPORTE DE CATEGORÍAS)
+    // =================================================================********
     const btnGuardarR = document.getElementById('btn-guardar-receta');
     const btnCargarR = document.getElementById('btn-cargar-receta');
     const btnVaciarR = document.getElementById('btn-vaciar-receta');
 
+    // Referencias a los nuevos modales HTML
+    const modalGuardarForm = document.getElementById('modal-guardar-formula');
+    const modalCargarForm = document.getElementById('modal-cargar-formula');
+
+    // Estado local para persistir categorías offline si no hay sesión
+    let listaCategoriasLocales = JSON.parse(localStorage.getItem('local_categorias')) || [];
+
+    // Función global auxiliar para refrescar el selector de guardado dinámicamente
+    async function refrescarSelectCategoriasGuardar() {
+        const selectCat = document.getElementById('select-categoria');
+        if (!selectCat) return;
+        selectCat.innerHTML = '<option value="">-- Selecciona una categoría --</option>';
+
+        let categoriasParaMostrar = [];
+        if (supabase && usuarioActual) {
+            const { data, error } = await supabase.from('categorias').select('id, nombre');
+            if (!error && data) categoriasParaMostrar = data;
+        } else {
+            categoriasParaMostrar = listaCategoriasLocales;
+        }
+
+        categoriasParaMostrar.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.nombre;
+            selectCat.appendChild(opt);
+        });
+    }
+
+    // FUNCIÓN: BORRADO SEGURO DE CATEGORÍAS (CON INTEGRIDAD DE RESTRICCIÓN)
+    async function eliminarCategoriaSeguro(categoriaId) {
+        // 1. Validar que la categoría no tenga fórmulas ligadas en el catálogo
+        const recetasAsociadas = catalogoRecetas.filter(rec => String(rec.categoria_id) === String(categoriaId));
+        
+        if (recetasAsociadas.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'No se puede eliminar',
+                text: `Esta sección contiene ${recetasAsociadas.length} receta(s) guardada(s). Elimina o reasigna las recetas primero.`,
+                confirmButtonColor: '#2e2a27'
+            });
+            return;
+        }
+
+        // 2. Preguntar confirmación explícita
+        const confirmacion = await Swal.fire({
+            title: '¿Eliminar Categoría?',
+            text: "Esta acción quitará el espacio conceptual permanentemente.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#bd5b4c',
+            cancelButtonColor: '#8c857b',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirmacion.isConfirmed) return;
+
+        try {
+            // 3. Borrado local/nube según corresponda
+            if (supabase && usuarioActual) {
+                const { error } = await supabase
+                    .from('categorias')
+                    .delete()
+                    .eq('id', categoriaId);
+
+                if (error) throw error;
+            } else {
+                listaCategoriasLocales = listaCategoriasLocales.filter(cat => String(cat.id) !== String(categoriaId));
+                localStorage.setItem('local_categorias', JSON.stringify(listaCategoriasLocales));
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Categoría Eliminada',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // 4. Repintar la UI del paso en el que se encuentre el usuario
+            refrescarSelectCategoriasGuardar();
+            mostrarPasoCategorias();
+
+        } catch (err) {
+            console.error("Error al remover categoría:", err);
+            Swal.fire('Error', 'No pudimos eliminar la sección en la nube.', 'error');
+        }
+    }
+
+    // ==========================================
+    // --- ACCIÓN: GUARDAR RECETA ---
+    // ==========================================
     if (btnGuardarR) {
-        btnGuardarR.addEventListener('click', () => {
+        btnGuardarR.addEventListener('click', async () => {
             if (listaReceta.length === 0) {
                 Swal.fire('Mesa Vacía', 'Agrega ingredientes a tu fórmula actual antes de archivarla.', 'warning');
                 return;
             }
+            
+            // Limpiar campos del modal
+            document.getElementById('input-nombre-formula').value = '';
+            document.getElementById('input-nueva-categoria').value = '';
 
-            Swal.fire({
-                title: 'Guardar como Sub-receta',
-                html: `
-                    <div style="text-align: left;">
-                        <label class="swal2-label-custom">Nombre de la Fórmula</label>
-                        <input id="swal-nombre-receta" class="swal2-input-custom" placeholder="Ej: Bizcocho Vainilla">
-                        <label class="swal2-label-custom">Rendimiento Estimado en gramos</label>
-                        <input id="swal-rendimiento-receta" type="number" class="swal2-input-custom" placeholder="Ej: 1000">
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Guardar',
-                preConfirm: () => {
-                    const nombre = document.getElementById('swal-nombre-receta').value.trim();
-                    const rendimiento = parseFloat(document.getElementById('swal-rendimiento-receta').value) || 0;
-                    if (!nombre) { Swal.showValidationMessage('El nombre es obligatorio.'); return false; }
-                    return { nombre, rendimiento };
-                }
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    const costoTotal = listaReceta.reduce((sum, item) => sum + (item.costoProporcional || 0), 0);
-                    catalogoRecetas.push({
-                        id: "cat_" + Date.now(),
-                        nombre: result.value.nombre,
-                        rendimiento: result.value.rendimiento || 1,
-                        costoTotal: costoTotal,
-                        ingredientes: [...listaReceta]
-                    });
-                    listaReceta = []; 
-                    await subirDatosNube();
-                    actualizarInstanciasLocales();
-                }
-            });
+            await refrescarSelectCategoriasGuardar();
+            modalGuardarForm.classList.remove('hidden');
         });
     }
 
-    if (btnCargarR) { btnCargarR.addEventListener('click', () => { if (catalogoRecetas.length === 0) { Swal.fire('Catálogo Vacío', 'No tienes sub-recetas.', 'info'); return; } abrirModalSeleccionSubReceta(); }); }
+    // Cerrar modal guardar
+    document.getElementById('btn-cerrar-modal-guardar')?.addEventListener('click', () => {
+        modalGuardarForm.classList.add('hidden');
+    });
 
-    function abrirModalSeleccionSubReceta() {
-        const listaHtml = catalogoRecetas.map(receta => `
-            <div class="subreceta-item-row">
-                <div class="btn-select-subreceta" data-id="${receta.id}">
-                    🎨 <b>${escapeHTML(receta.nombre)}</b> <br>
-                    <small>$${receta.costoTotal.toFixed(2)} - Rinde: ${receta.rendimiento}g</small>
-                </div>
-                <button type="button" class="btn-delete-subreceta-catalogo" data-id="${receta.id}">🗑️</button>
-            </div>
-        `).join('');
+    // Procesar el guardado final / Creación indexada de categorías
+    document.getElementById('btn-confirmar-guardar-formula')?.addEventListener('click', async () => {
+        const nombreFormula = document.getElementById('input-nombre-formula').value.trim();
+        const selectCategoriaId = document.getElementById('select-categoria').value;
+        const nuevaCategoriaNombre = document.getElementById('input-nueva-categoria').value.trim();
+
+        if (!nombreFormula) {
+            Swal.fire('Atención', 'Ingresa el nombre de la sub-receta.', 'info');
+            return;
+        }
+
+        let categoriaIdFinal = selectCategoriaId;
+
+        // Si el usuario ingresó texto para crear una nueva categoría
+        if (nuevaCategoriaNombre !== "") {
+            // Validar duplicados locales antes de procesar
+            let todasLasCats = [];
+            if (supabase && usuarioActual) {
+                const { data } = await supabase.from('categorias').select('nombre');
+                if (data) todasLasCats = data;
+            } else {
+                todasLasCats = listaCategoriasLocales;
+            }
+
+            const existeDuplicado = todasLasCats.some(cat => cat.nombre.toLowerCase() === nuevaCategoriaNombre.toLowerCase());
+            if (existeDuplicado) {
+                Swal.fire('Sección Existente', `La categoría "${nuevaCategoriaNombre}" ya existe en tus índices.`, 'warning');
+                return;
+            }
+
+            if (supabase && usuarioActual) {
+                const { data: nuevaCat, error } = await supabase
+                    .from('categorias')
+                    .insert({ nombre: nuevaCategoriaNombre })
+                    .select()
+                    .single();
+
+                if (error) {
+                    Swal.fire('Error', 'No se pudo crear la categoría en la nube: ' + error.message, 'error');
+                    return;
+                }
+                categoriaIdFinal = nuevaCat.id;
+            } else {
+                const nuevoIdCat = "cat_loc_" + Date.now();
+                listaCategoriasLocales.push({ id: nuevoIdCat, nombre: nuevaCategoriaNombre });
+                localStorage.setItem('local_categorias', JSON.stringify(listaCategoriasLocales));
+                categoriaIdFinal = nuevoIdCat;
+            }
+        }
+
+        if (!categoriaIdFinal) {
+            Swal.fire('Atención', 'Por favor selecciona una categoría o escribe una nueva.', 'info');
+            return;
+        }
+
+        // Calcular costo total actual de la mesa
+        const costoTotal = listaReceta.reduce((sum, item) => sum + (item.costoProporcional || 0), 0);
+
+        // Registrar la sub-receta
+        catalogoRecetas.push({
+            id: "rec_" + Date.now(),
+            nombre: nombreFormula,
+            categoria_id: categoriaIdFinal, 
+            rendimiento: 1,
+            costoTotal: costoTotal,
+            ingredientes: [...listaReceta]
+        });
+
+        listaReceta = []; 
+        modalGuardarForm.classList.add('hidden');
+
+        await subirDatosNube();
+        actualizarInstanciasLocales();
 
         Swal.fire({
-            title: 'Elegir Receta', 
-            html: `<div class="catalogo-modal-scroll">${listaHtml}</div>`,
-            showCancelButton: true, showConfirmButton: false,
-            didOpen: () => {
-                const popup = Swal.getPopup();
-                popup.querySelectorAll('.btn-select-subreceta').forEach(el => {
-                    el.addEventListener('click', async () => {
-                        const recetaSeleccionada = catalogoRecetas.find(r => r.id === el.dataset.id);
-                        if (!recetaSeleccionada) return;
-
-                        listaReceta.push({
-                            id: "sub_" + Date.now(),
-                            itemIdOriginal: recetaSeleccionada.id,
-                            nombre: recetaSeleccionada.nombre,
-                            gridCantidad: 1, tipo: "insumo", isSubReceta: true,               
-                            ingredientesInternos: recetaSeleccionada.ingredientes,
-                            unidadesVisual: "pza", costoProporcional: parseFloat(recetaSeleccionada.costoTotal) 
-                        });
-                        await subirDatosNube();
-                        actualizarInstanciasLocales();
-                        Swal.close();
-                    });
-                });
-
-                popup.querySelectorAll('.btn-delete-subreceta-catalogo').forEach(el => {
-                    el.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        catalogoRecetas = catalogoRecetas.filter(r => r.id !== el.dataset.id);
-                        await subirDatosNube();
-                        actualizarInstanciasLocales();
-                        Swal.close();
-                    });
-                });
-            }
+            title: '¡Receta Guardada! 🎉',
+            text: `"${nombreFormula}" ha sido indexada con éxito.`,
+            icon: 'success',
+            confirmButtonColor: '#2e2a27'
         });
+    });
+
+
+    // ==========================================
+    // --- ACCIÓN: CARGAR RECETA (POR PASOS) ---
+    // ==========================================
+    if (btnCargarR) {
+        btnCargarR.addEventListener('click', () => {
+            modalCargarForm.classList.remove('hidden');
+            mostrarPasoCategorias();
+        });
+    }
+
+    document.getElementById('btn-cerrar-modal-cargar')?.addEventListener('click', () => {
+        modalCargarForm.classList.add('hidden');
+    });
+
+    // Paso A: Mostrar Categorías Con Soporte de Borrado Integrado Flexbox
+    async function mostrarPasoCategorias() {
+        document.getElementById('titulo-modal-cargar').textContent = "Selecciona Categoría";
+        const cuerpo = document.getElementById('cuerpo-modal-cargar');
+        if (!cuerpo) return;
+        cuerpo.innerHTML = '';
+
+        let categorias = [];
+        if (supabase && usuarioActual) {
+            const { data } = await supabase.from('categorias').select('id, nombre');
+            if (data) {
+                categorias = data;
+            }
+        } else {
+            categorias = listaCategoriasLocales;
+        }
+
+        if (categorias.length === 0) {
+            cuerpo.innerHTML = '<p style="text-align:center; color:#8c857b; font-size:14px; margin:20px 0;">No tienes categorías creadas actualmente.</p>';
+            return;
+        }
+
+        categorias.forEach(cat => {
+            const rowWrapper = document.createElement('div');
+            rowWrapper.style.cssText = "display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; width: 100%;";
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.style.cssText = `
+                flex-grow: 1; 
+                padding: 14px 18px; 
+                text-align: left; 
+                justify-content: space-between; 
+                display: flex; 
+                align-items: center; 
+                background: #fcfbfa; 
+                color: #2c2a29; 
+                border: 1px solid #e6e1da; 
+                border-radius: 12px; 
+                font-weight: 600; 
+                font-size: 14px; 
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
+            
+            btn.onmouseenter = () => { btn.style.background = "#f5f0e6"; btn.style.borderColor = "#c5bba8"; };
+            btn.onmouseleave = () => { btn.style.background = "#fcfbfa"; btn.style.borderColor = "#e6e1da"; };
+
+            const conteo = catalogoRecetas.filter(r => String(r.categoria_id) === String(cat.id)).length;
+            btn.innerHTML = `<span>📁 ${escapeHTML(cat.nombre.toUpperCase())}</span> <span style="font-weight:400; color:#8c857b; background:#f0ede6; padding:4px 10px; border-radius:20px; font-size:12px;">${conteo} ${conteo === 1 ? 'receta' : 'recetas'}</span>`;
+            btn.onclick = () => mostrarPasoRecetas(cat.id, cat.nombre);
+            
+            // Botón de eliminación directa de categoría
+            const btnBorrarCat = document.createElement('button');
+            btnBorrarCat.type = 'button';
+            btnBorrarCat.innerHTML = '🗑️';
+            btnBorrarCat.style.cssText = "background: #fff1f0; color: #bd5b4c; border: 1px solid #ffccc7; width: 48px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;";
+            btnBorrarCat.onmouseenter = () => { btnBorrarCat.style.background = "#bd5b4c"; btnBorrarCat.style.color = "#fff"; };
+            btnBorrarCat.onmouseleave = () => { btnBorrarCat.style.background = "#fff1f0"; btnBorrarCat.style.color = "#bd5b4c"; };
+            btnBorrarCat.onclick = (e) => {
+                e.stopPropagation();
+                eliminarCategoriaSeguro(cat.id);
+            };
+
+            rowWrapper.appendChild(btn);
+            rowWrapper.appendChild(btnBorrarCat);
+            cuerpo.appendChild(rowWrapper);
+        });
+    }
+
+    // Paso B: Mostrar recetas filtradas
+    function mostrarPasoRecetas(categoriaId, nombreCategoria) {
+        document.getElementById('titulo-modal-cargar').textContent = nombreCategoria.toUpperCase();
+        const cuerpo = document.getElementById('cuerpo-modal-cargar');
+        if (!cuerpo) return;
+        cuerpo.innerHTML = '';
+
+        const recetasFiltradas = catalogoRecetas.filter(r => String(r.categoria_id) === String(categoriaId));
+
+        if (recetasFiltradas.length === 0) {
+            cuerpo.innerHTML = '<p style="text-align:center; color:#8c857b; font-size:14px; margin:20px 0;">No hay recetas archivadas en esta sección.</p>';
+        }
+
+        recetasFiltradas.forEach(receta => {
+            const row = document.createElement('div');
+            row.style.cssText = "display:flex; gap:8px; width:100%; align-items:stretch; margin-bottom: 10px;";
+
+            const btnReceta = document.createElement('button');
+            btnReceta.type = 'button';
+            btnReceta.style.cssText = `
+                flex-grow: 1; 
+                text-align: left; 
+                padding: 14px; 
+                border-radius: 12px; 
+                border: 1px solid #e8e5e0; 
+                background: #ffffff; 
+                cursor: pointer;
+                transition: border-color 0.2s;
+            `;
+            btnReceta.onmouseenter = () => btnReceta.style.borderColor = "#bcada4";
+            btnReceta.onmouseleave = () => btnReceta.style.borderColor = "#e8e5e0";
+            btnReceta.innerHTML = `🎨 <span style="color:#2c2a29; font-weight:600;">${escapeHTML(receta.nombre)}</span><br><small style="color:#7c7267; font-size:12px;">Costo: $${parseFloat(receta.costoTotal || 0).toFixed(2)}</small>`;
+            
+            btnReceta.onclick = async () => {
+                listaReceta.push({
+                    id: "sub_" + Date.now(),
+                    itemIdOriginal: receta.id,
+                    nombre: receta.nombre,
+                    gridCantidad: 1, 
+                    tipo: "insumo", 
+                    isSubReceta: true,               
+                    ingredientesInternos: receta.ingredientes,
+                    unidadVisual: "Fórmula", 
+                    costoProporcional: parseFloat(receta.costoTotal) 
+                });
+                modalCargarForm.classList.add('hidden');
+                await subirDatosNube();
+                actualizarInstanciasLocales();
+            };
+
+            const btnBorrar = document.createElement('button');
+            btnBorrar.type = 'button';
+            btnBorrar.style.cssText = "background: #fff1f0; color: #bd5b4c; border: 1px solid #ffccc7; padding: 0 16px; border-radius: 12px; cursor: pointer; font-size: 16px; transition: all 0.2s;";
+            btnBorrar.onmouseenter = () => { btnBorrar.style.background = "#bd5b4c"; btnBorrar.style.color = "#fff"; };
+            btnBorrar.onmouseleave = () => { btnBorrar.style.background = "#fff1f0"; btnBorrar.style.color = "#bd5b4c"; };
+            btnBorrar.innerHTML = '🗑️';
+            
+            btnBorrar.onclick = () => {
+                modalCargarForm.classList.add('hidden'); 
+                
+                Swal.fire({
+                    title: '¿Eliminar receta?',
+                    text: `"${receta.nombre}" se borrará permanentemente.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#bd5b4c',
+                    cancelButtonColor: '#2c2a29',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(async (res) => {
+                    if (res.isConfirmed) {
+                        catalogoRecetas = catalogoRecetas.filter(r => r.id !== receta.id);
+                        await subirDatosNube();
+                        actualizarInstanciasLocales();
+                        
+                        modalCargarForm.classList.remove('hidden');
+                        mostrarPasoRecetas(categoriaId, nombreCategoria);
+                    } else {
+                        modalCargarForm.classList.remove('hidden');
+                        mostrarPasoRecetas(categoriaId, nombreCategoria);
+                    }
+                });
+            };
+
+            row.appendChild(btnReceta);
+            row.appendChild(btnBorrar);
+            cuerpo.appendChild(row);
+        });
+
+        const btnVolver = document.createElement('button');
+        btnVolver.type = 'button';
+        btnVolver.style.cssText = "background:none; border:none; color:#8c857b; text-decoration:underline; margin-top:12px; cursor:pointer; font-size:13px; align-self:center;";
+        btnVolver.textContent = "← Volver a Categorías";
+        btnVolver.onclick = mostrarPasoCategorias;
+        cuerpo.appendChild(btnVolver);
     }
 
     if (btnVaciarR) {
@@ -907,7 +1211,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnAbrirConfig && modalConfig) {
         btnAbrirConfig.addEventListener("click", () => {
-            // Sincronizar inputs antes de mostrar el modal
             if (document.getElementById('input-mano-obra')) document.getElementById('input-mano-obra').value = parametrosComerciales.manoObraPorHora || 0;
             if (document.getElementById('select-dificultad')) document.getElementById('select-dificultad').value = parametrosComerciales.dificultad || "facil";
             if (document.getElementById('input-distancia')) document.getElementById('input-distancia').value = parametrosComerciales.distanciaIdaKm || 0;
@@ -916,13 +1219,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (document.getElementById('input-margen-utilidad')) document.getElementById('input-margen-utilidad').value = parametrosComerciales.margenUtilidad || CONFIG.MARGEN_UTILIDAD_DEFAULT;
             if (document.getElementById('input-porciones')) document.getElementById('input-porciones').value = parametrosComerciales.porcionesPastel || 12;
 
-            // Mostrar quitando de forma limpia la clase hidden
             modalConfig.classList.remove("hidden");
             renderizarIconosSeguro();
         });
     }
 
-    // Eventos para cerrar al dar clic en la (X) o en "Listo"
     [btnCerrarConfig, btnGuardarConfig].forEach(btn => {
         if (btn && modalConfig) {
             btn.addEventListener("click", () => {
@@ -933,7 +1234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Cerrar si el usuario hace clic afuera de la caja blanca (en la zona opaca)
     if (modalConfig) {
         modalConfig.addEventListener("click", (e) => {
             if (e.target === modalConfig) {
@@ -948,7 +1248,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 📊 CÁLCULOS FINANCIEROS Y MÁRGENES DE GANANCIA BLINDADOS
     // =========================================================================
     function calcularFinanzas() {
-        // 1. Separar insumos comestibles de consumibles (para no aplicar merma de comida al cartón/empaques)
         const costoInsumosComestibles = listaReceta
             .filter(item => item.tipo === 'insumo')
             .reduce((sum, item) => sum + (item.costoProporcional || 0), 0);
@@ -957,54 +1256,58 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(item => item.tipo === 'consumible')
             .reduce((sum, item) => sum + (item.costoProporcional || 0), 0);
 
-        // 2. Aplicar merma e indirectos fijos SÓLO a la materia prima comestible
         const costoComidaConGastosYMerma = (costoInsumosComestibles * (1 + CONFIG.PORCENTAJE_MERMA)) * (1 + CONFIG.PORCENTAJE_GASTOS_FIJOS);
-        
-        // 3. Mano de obra por horas de complejidad
+        const materiaPrimaDirectaTotal = costoComidaConGastosYMerma + costoConsumiblesEmpaque;
+
+        if (totalProduccionSpan) totalProduccionSpan.textContent = `$${Math.ceil(materiaPrimaDirectaTotal)}`;
+
         let horasEstimadas = 1;
         if (parametrosComerciales.dificultad === "medio") horasEstimadas = 2.5;
         if (parametrosComerciales.dificultad === "dificil") horasEstimadas = 4;
         const costoManoObra = (parametrosComerciales.manoObraPorHora || 0) * horasEstimadas;
 
-        // 4. Logística: Combustible + Amortización por desgaste del vehículo
+        const elTotalManoObra = document.getElementById('total-mano-obra');
+        if (elTotalManoObra) elTotalManoObra.textContent = `$${Math.ceil(costoManoObra)}`;
+
         let rendimientoKmPorLitro = 12; 
         if (parametrosComerciales.tipoVehiculo === "suv") rendimientoKmPorLitro = 9;
         if (parametrosComerciales.tipoVehiculo === "moto") rendimientoKmPorLitro = 25;
 
-        const distanciaTotalKm = (parametrosComerciales.distanciaIdaKm || 0) * 2; 
+        const distanciaIda = parametrosComerciales.distanciaIdaKm || 0;
+        const distanciaTotalKm = distanciaIda * 2; 
         const litrosConsumidos = distanciaTotalKm / rendimientoKmPorLitro;
         const costoGasolina = litrosConsumidos * (parametrosComerciales.costoLitroGasolina || 0);
         
-        // Costo de mantenimiento aproximado por km (Seguro, llantas, aceite) -> Ejemplo: $0.50 extras por km
         const COSTO_AMORTIZACION_KM = 0.50; 
         const costoDesgasteVehiculo = distanciaTotalKm * COSTO_AMORTIZACION_KM;
-
-        // 5. Costo Total Real de Fabricación y Entrega
-        const costoTotalReal = costoComidaConGastosYMerma + costoConsumiblesEmpaque + costoManoObra + costoGasolina + costoDesgasteVehiculo;
-
-        if (totalProduccionSpan) totalProduccionSpan.textContent = `$${costoTotalReal.toFixed(2)}`;
         
-        // 6. Precio Sugerido Base considerando la utilidad esperada
+        const COBRO_BASE_LOGISTICA = distanciaIda > 0 ? 50 : 0;
+        const costoLogisticaTotal = costoGasolina + costoDesgasteVehiculo + COBRO_BASE_LOGISTICA;
+
+        const elTotalLogistica = document.getElementById('total-logistica');
+        if (elTotalLogistica) elTotalLogistica.textContent = `$${Math.ceil(costoLogisticaTotal)}`;
+
+        const costoInversionBase = materiaPrimaDirectaTotal + costoManoObra + costoLogisticaTotal;
+
         let margenElegido = parseFloat(parametrosComerciales.margenUtilidad);
         if (isNaN(margenElegido) || margenElegido >= 100 || margenElegido <= 0) {
-            margenElegido = CONFIG.MARGEN_UTILIDAD_DEFAULT; 
+            margenElegido = 60; 
         }
         
-        let precioSugeridoPastel = costoTotalReal / (1 - (margenElegido / 100));
-        
-        // [OPCIONAL] 7. Margen de pasarela de pago / Comisión Bancaria estándar (3.5% + IVA aprox = ~4%)
-        // Descomenta las líneas de abajo si quieres blindar los pagos con tarjeta:
-        // const FACTOR_COMISION_TARJETA = 0.04;
-        // precioSugeridoPastel = precioSugeridoPastel / (1 - FACTOR_COMISION_TARJETA);
+        let precioSugeridoPastel = costoInversionBase / (1 - (margenElegido / 100));
+        let gananciaNetaPesos = precioSugeridoPastel - costoInversionBase;
+
+        const elUtilidadPesos = document.getElementById('resumen-utilidad-pesos');
+        if (elUtilidadPesos) elUtilidadPesos.textContent = `+$${Math.ceil(gananciaNetaPesos)}`;
 
         const elSugerido = document.getElementById('res-precio-sugerido');
-        if (elSugerido) elSugerido.textContent = `$${precioSugeridoPastel.toFixed(2)}`;
+        if (elSugerido) elSugerido.textContent = `$${Math.ceil(precioSugeridoPastel)}`;
         
-        calcularCostosPorRebanadaEspecial(costoTotalReal, precioSugeridoPastel);
+        calcularCostosPorRebanadaEspecial(materiaPrimaDirectaTotal, precioSugeridoPastel);
 
-        return costoTotalReal; 
+        return costoInversionBase; 
     }
-  
+
     function calcularCostosPorRebanadaEspecial(totalProduccion, totalSugerido) {
         const inputPorciones = document.getElementById("input-porciones");
         let porciones = inputPorciones ? parseInt(inputPorciones.value) : (parametrosComerciales.porcionesPastel || 12);
@@ -1020,8 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const elCostoRebanada = document.getElementById("costo-por-rebanada");
         const elSugeridoRebanada = document.getElementById("sugerido-por-rebanada");
 
-        if (elCostoRebanada) elCostoRebanada.innerText = "$" + costoIndividual.toFixed(2);
-        if (elSugeridoRebanada) elSugeridoRebanada.innerText = "$" + sugeridoIndividual.toFixed(2);
+        if (elCostoRebanada) elCostoRebanada.innerText = "$" + Math.ceil(costoIndividual);
+        if (elSugeridoRebanada) elSugeridoRebanada.innerText = "$" + Math.ceil(sugeridoIndividual);
     }
 
     window.calcularCostosPorRebanada = function() {
@@ -1045,28 +1348,289 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnFinalizar) {
         btnFinalizar.addEventListener('click', async function() {
             await subirDatosNube();
-            const totalPastelTexto = document.getElementById('res-precio-sugerido')?.textContent || "$0.00";
             
+            const totalPastelTexto = document.getElementById('res-precio-sugerido')?.textContent || "$0.00";
+            const totalNumerico = parseFloat(totalPastelTexto.replace(/[^0-9.-]+/g, "")) || 0;
+            
+            const porciones = parametrosComerciales?.porcionesPastel || 12;
+            const rebanadaTexto = document.getElementById('resumen-sugerido-rebanada')?.textContent || 
+                                  document.querySelector('.destacado-rebanada span:last-child')?.textContent || "$0.00";
+
             Swal.fire({
-                title: 'Enviar Cotización',
-                input: 'text',
-                inputPlaceholder: 'Número de WhatsApp (10 dígitos)',
+                title: 'Configurar Envío',
+                html: `
+                    <p class="swal2-html-container" style="text-align: left; margin-bottom: 16px; font-size: 13px;">
+                        Personaliza los datos de la cotización de autor antes de enviarla por WhatsApp.
+                    </p>
+                    <div style="text-align: left; display: flex; flex-direction: column; gap: 14px;">
+                        <div>
+                            <label class="swal2-label-custom">Nombre de tu Marca / Negocio</label>
+                            <input id="swal-marca-nombre" class="swal2-input-custom" type="text" placeholder="Ej. D'Leite Repostería">
+                        </div>
+                        <div>
+                            <label class="swal2-label-custom">Número de WhatsApp (10 dígitos)</label>
+                            <input id="swal-whatsapp-num" class="swal2-input-custom" type="text" placeholder="Ej. 5512345678">
+                        </div>
+                        <div>
+                            <label class="swal2-label-custom">Porcentaje de Anticipo Sugerido</label>
+                            <select id="swal-anticipo-porcentaje" class="swal2-input-custom" style="appearance: auto; -webkit-appearance: auto;">
+                                <option value="50">50% del total</option>
+                                <option value="60">60% del total</option>
+                                <option value="70" selected>70% del total (Recomendado)</option>
+                                <option value="80">80% del total</option>
+                                <option value="100">100% (Liquidación total)</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
                 showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value || !/^\d{10}$/.test(value.trim())) { return 'Debes ingresar un número válido de 10 dígitos.'; }
+                confirmButtonText: 'Enviar Vía WhatsApp',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    title: 'swal2-title-custom',
+                    popup: 'swal2-popup-custom'
+                },
+                preConfirm: () => {
+                    const marca = document.getElementById('swal-marca-nombre').value.trim();
+                    const telefono = document.getElementById('swal-whatsapp-num').value.trim();
+                    const porcentaje = parseInt(document.getElementById('swal-anticipo-porcentaje').value, 10);
+
+                    if (!marca) {
+                        Swal.fire.showValidationMessage('Por favor, ingresa el nombre de tu negocio.');
+                        return false;
+                    }
+                    if (!telefono || !/^\d{10}$/.test(telefono)) {
+                        Swal.fire.showValidationMessage('Debes ingresar un número de WhatsApp válido de 10 dígitos.');
+                        return false;
+                    }
+
+                    return { marca, telefono, porcentaje };
                 }
             }).then((result) => {
                 if (result.isConfirmed && result.value) {
-                    const txtCodificado = encodeURIComponent(`Estimado cliente, la inversión total para su proyecto de repostería es de: ${totalPastelTexto}.`);
-                    window.open(`https://api.whatsapp.com/send?phone=52${result.value.trim()}&text=${txtCodificado}`, '_blank');
+                    const { marca, telefono, porcentaje } = result.value;
+                    const anticipoCalculado = Math.ceil(totalNumerico * (porcentaje / 100));
+                    const anticipoTexto = `$${anticipoCalculado.toLocaleString('es-MX')}`;
+
+                    const cuerpoMensaje = 
+`✨ *${marca.toUpperCase()}* ✨
+_Propuesta y Alta Repostería_
+───────────────────
+*🎨 PROPUESTA CREATIVA*
+
+• *Concepto:* Pieza personalizada de diseño exclusivo.
+
+• *Técnica:* Formulación artesanal adaptada a sus requerimientos.
+
+• *Rendimiento:* Configurado para ${porciones} porciones sugeridas.
+
+───────────────────
+*🌾 COMPROMISO DE CALIDAD*
+
+• *Insumos:* Materia prima premium, texturas finas y elementos seleccionados de alta gama.
+
+• *Garantía:* Elaboración bajo rigurosos estándares artesanales para asegurar frescura y estructura óptimas en su evento.
+
+┌──────────────────
+│ *💳 ESTRUCTURA DE INVERSIÓN*
+
+│ 💰 *Total Neto:* ${totalPastelTexto} M.N.
+│ 🔒 *Anticipo de Reserva (${porcentaje}%):* ${anticipoTexto} M.N.
+│ 🍰 *Valor por Porción:* ${rebanadaTexto} M.N.
+└──────────────────
+
+───────────────────
+_• El anticipo garantiza la congelación de fecha en agenda._
+_• Propuesta válida por 15 días naturales._
+_Creado con NEXI Systems._`;
+
+                    const txtCodificado = encodeURIComponent(cuerpoMensaje);
+                    window.open(`https://api.whatsapp.com/send?phone=52${telefono}&text=${txtCodificado}`, '_blank');
                 }
             });
         });
     }
 
     // ==========================================
-    // ☁️ PERSISTENCIA EN LA NUBE CONTROLADA
+    // BOX: GENERADOR DE COTIZACIÓN PDF PREMIUM
     // ==========================================
+    document.getElementById('btn-descargar-pdf')?.addEventListener('click', function() {
+        Swal.fire({
+            title: 'Configurar PDF Editorial',
+            html: `
+                <p style="text-align: left; margin-bottom: 16px; font-size: 13px; color: var(--japandi-muted);">
+                    Personaliza los datos impresos que se mostrarán en la hoja de cotización.
+                </p>
+                <div style="text-align: left; display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--japandi-accent);">Nombre de tu Marca</label>
+                        <input id="pdf-marca-nombre" class="swal2-input" type="text" value="Atelier de Repostería" style="margin: 4px 0 0 0; width: 100%; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--japandi-accent);">Porcentaje de Anticipo</label>
+                        <select id="pdf-anticipo-porcentaje" class="swal2-input" style="margin: 4px 0 0 0; width: 100%; box-sizing: border-box; appearance: auto; -webkit-appearance: auto;">
+                            <option value="50">50% del total</option>
+                            <option value="60">60% del total</option>
+                            <option value="70" selected>70% del total (Recomendado)</option>
+                            <option value="80">80% del total</option>
+                            <option value="100">100% (Liquidación)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--japandi-accent);">Logotipo del Negocio (PNG / JPG)</label>
+                        <input id="pdf-marca-logo" type="file" accept="image/*" style="margin: 8px 0 0 0; font-size: 12px; width: 100%;">
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Generar PDF Imprimible',
+            cancelButtonText: 'Cancelar',
+            customClass: { title: 'swal2-title-custom' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const marcaInput = document.getElementById('pdf-marca-nombre').value.trim() || "ATELIER DE REPOSTERÍA";
+                const porcentajeInput = parseInt(document.getElementById('pdf-anticipo-porcentaje').value, 10);
+                const logoFile = document.getElementById('pdf-marca-logo').files[0];
+
+                if (logoFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        construirPdfPremium(marcaInput, porcentajeInput, e.target.result);
+                    };
+                    reader.readAsDataURL(logoFile);
+                } else {
+                    construirPdfPremium(marcaInput, porcentajeInput, null);
+                }
+            }
+        });
+    });
+
+    function construirPdfPremium(marca, porcentajeAnticipo, logoBase64) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        const totalPastelTexto = document.getElementById('res-precio-sugerido')?.textContent || "$0.00";
+        const totalNumerico = parseFloat(totalPastelTexto.replace(/[^0-9.-]+/g, "")) || 0;
+        const porciones = (typeof parametrosComerciales !== 'undefined' && parametrosComerciales?.porcionesPastel) || 12;
+        const rebanadaTexto = document.getElementById('resumen-sugerido-rebanada')?.textContent || 
+                              document.querySelector('.destacado-rebanada span:last-child')?.textContent || "$0.00";
+        
+        const anticipoCalculado = Math.ceil(totalNumerico * (porcentajeAnticipo / 100));
+        const anticipoTexto = `$${anticipoCalculado.toLocaleString('es-MX')}`;
+
+        const colorOscuro = [44, 42, 41];    
+        const colorMuted = [115, 110, 105];  
+        const colorArcilla = [184, 142, 116];
+        const maxTextoWidth = 120; 
+
+        if (logoBase64) {
+            const img = new Image();
+            img.src = logoBase64;
+            img.onload = function() {
+                const maxLogoHeight = 22; 
+                const ratio = img.width / img.height;
+                const logoWidth = maxLogoHeight * ratio;
+
+                doc.addImage(logoBase64, 'PNG', 20, 20, logoWidth, maxLogoHeight);
+                
+                const textStartX = 20 + logoWidth + 6;
+                doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+                doc.setFont("Helvetica", "normal");
+                doc.setFontSize(22);
+                doc.text(marca.toUpperCase(), textStartX, 30);
+                
+                doc.setFontSize(9);
+                doc.setTextColor(colorArcilla[0], colorArcilla[1], colorArcilla[2]);
+                doc.text("COTIZACIÓN EXCLUSIVA DE ALTA GAMA", textStartX, 37);
+
+                continuarDibujoPdf(doc, 58, colorOscuro, colorMuted, colorArcilla, maxTextoWidth, porciones, totalPastelTexto, porcentajeAnticipo, anticipoTexto, rebanadaTexto, marca);
+            };
+        } else {
+            doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(24);
+            doc.text(marca.toUpperCase(), 20, 32);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(colorArcilla[0], colorArcilla[1], colorArcilla[2]);
+            doc.text("COTIZACIÓN EXCLUSIVA DE ALTA GAMA", 20, 39);
+
+            continuarDibujoPdf(doc, 54, colorOscuro, colorMuted, colorArcilla, maxTextoWidth, porciones, totalPastelTexto, porcentajeAnticipo, anticipoTexto, rebanadaTexto, marca);
+        }
+    }
+
+    function continuarDibujoPdf(doc, inicioY, colorOscuro, colorMuted, colorArcilla, maxTextoWidth, porciones, totalPastelTexto, porcentajeAnticipo, anticipoTexto, rebanadaTexto, marca) {
+        doc.setDrawColor(colorArcilla[0], colorArcilla[1], colorArcilla[2]);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.line(20, 48, 190, 48);
+
+        doc.setLineDashPattern([], 0); 
+        doc.setFontSize(14);
+        doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+        doc.text("Conceptualización de Autor", 20, inicioY);
+
+        doc.setFontSize(10.5);
+        let currentY = inicioY + 12;
+
+        doc.setTextColor(colorMuted[0], colorMuted[1], colorMuted[2]);
+        doc.text("• Propuesta Creativa:", 24, currentY);
+        doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+        let lineasCreativa = doc.splitTextToSize("Pieza única personalizada con diseño exclusivo y formulación artesanal.", maxTextoWidth);
+        doc.text(lineasCreativa, 70, currentY);
+
+        currentY += (lineasCreativa.length * 5) + 4;
+
+        doc.setTextColor(colorMuted[0], colorMuted[1], colorMuted[2]);
+        doc.text("• Compromiso de Calidad:", 24, currentY);
+        doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+        let lineasCalidad = doc.splitTextToSize("Materia prima premium, texturas delicadas e insumos seleccionados de alta gama.", maxTextoWidth);
+        doc.text(lineasCalidad, 70, currentY);
+
+        currentY += (lineasCalidad.length * 5) + 4;
+
+        doc.setTextColor(colorMuted[0], colorMuted[1], colorMuted[2]);
+        doc.text("• Formato y Rendimiento:", 24, currentY);
+        doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+        let lineasFormato = doc.splitTextToSize(`${porciones} porciones sugeridas calculadas a precisión métrica.`, maxTextoWidth);
+        doc.text(lineasFormato, 70, currentY);
+
+        currentY += 18;
+        
+        doc.setFillColor(250, 248, 245); 
+        doc.roundedRect(20, currentY, 170, 72, 4, 4, 'F');
+
+        let financieroY = currentY + 12;
+        doc.setFontSize(13);
+        doc.setTextColor(colorArcilla[0], colorArcilla[1], colorArcilla[2]);
+        doc.text("Estructura de Inversión Sugerida", 30, financieroY);
+
+        financieroY += 16;
+        doc.setFontSize(11);
+        doc.setTextColor(colorOscuro[0], colorOscuro[1], colorOscuro[2]);
+        doc.text("Inversión Total Neta del Proyecto:", 30, financieroY);
+        doc.text(`${totalPastelTexto} M.N.`, 145, financieroY);
+
+        financieroY += 13;
+        doc.text(`Anticipo de Reserva Requerido (${porcentajeAnticipo}%):`, 30, financieroY);
+        doc.text(`${anticipoTexto} M.N.`, 145, financieroY);
+
+        financieroY += 13;
+        doc.setTextColor(colorMuted[0], colorMuted[1], colorMuted[2]);
+        doc.text("Valor Estimado Equivalente por Porción:", 30, financieroY);
+        doc.text(`${rebanadaTexto} M.N.`, 145, financieroY);
+
+        currentY = financieroY + 38;
+        doc.setFontSize(9.5);
+        doc.setTextColor(colorMuted[0], colorMuted[1], colorMuted[2]);
+        doc.text("* El anticipo correspondiente es indispensable para congelar la fecha solicitada en agenda.", 20, currentY);
+        doc.text("* Esta propuesta económica cuenta con una validez de 15 días naturales a partir de su emisión.", 20, currentY + 7);
+
+        doc.setFontSize(8);
+        doc.text("Documento generado digitalmente a través de Nexi Costos Atelier Suite.", 20, 278);
+
+        doc.save(`Cotizacion-${marca.replace(/\s+/g, '-')}.pdf`);
+    }
+
     function actualizarBannerEstatus() {
         const banner = document.getElementById('banner-estatus');
         const texto = document.getElementById('banner-texto');
@@ -1105,6 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 listaItems = []; listaReceta = []; catalogoRecetas = [];
                 actualizarInstanciasLocales();
                 actualizarBannerEstatus();
+                verificarYBloquearPorPlan(); 
             }
         });
     }
@@ -1140,18 +1705,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (err) { console.error(err); }
-        finally { actualizarInstanciasLocales(); actualizarBannerEstatus(); }
+        finally { 
+            actualizarInstanciasLocales(); 
+            actualizarBannerEstatus(); 
+            verificarYBloquearPorPlan(); 
+        }
     }
 
     if (btnCerrarSesion && supabase) {
-        btnCerrarSesion.addEventListener('click', async () => {
-            try { await supabase.auth.signOut(); } catch (err) { console.error(err); }
+        btnCerrarSesion.addEventListener('click', async (e) => {
+            e.preventDefault(); 
+            
+            Swal.fire({
+                title: '¿Cerrar Sesión?',
+                text: 'Todos tus datos quedan guardados y respaldados en NEXICloud.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2e2a27',
+                cancelButtonColor: '#8A857C',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try { 
+                        await supabase.auth.signOut(); 
+                        Swal.fire({
+                            title: 'Sesión Cerrada',
+                            text: '¡Vuelve pronto!',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } catch (err) { 
+                        console.error(err); 
+                    }
+                }
+            });
         });
     }
 
-    // ==========================================
-    // 🎙️ MÓDULO DE ACCESIBILIDAD POR VOZ (DICTADO) - CORREGIDO
-    // ==========================================
     if (btnDictar) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) { 
@@ -1168,7 +1760,6 @@ document.addEventListener('DOMContentLoaded', () => {
         recon.interimResults = false; 
         recon.maxAlternatives = 1;
 
-        // Función auxiliar para dar una pequeña pausa entre alertas
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         const capturarDatoVoz = (instruccion) => {
@@ -1184,7 +1775,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         try { recon.start(); } catch(e) { console.error("Error al iniciar recon:", e); } 
                     },
                     willClose: () => { 
-                        // Solo abortamos si el usuario canceló manualmente el SweetAlert
                         if (!finalizadoPorResultado) {
                             recon.abort(); 
                         }
@@ -1212,41 +1802,106 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // 1. Capturar Nombre
             let pasoNombre = await capturarDatoVoz('Dí el NOMBRE del ingrediente');
             if (!pasoNombre?.exito || !pasoNombre.texto) return;
             insumoNombre.value = pasoNombre.texto;
             
-            // Pausa crucial para que el navegador destruya la instancia anterior de grabación
             await sleep(400); 
 
-            // 2. Capturar Marca (Si aplica)
             if (tipoActivo === 'insumo') {
                 let pasoMarca = await capturarDatoVoz(`Dí la MARCA de "${pasoNombre.texto}"`);
-                if (!pasoMarca?.exito) return; // Si cancela, frena el flujo
+                if (!pasoMarca?.exito) return; 
                 insumoMarca.value = pasoMarca.texto;
                 await sleep(400);
             }
 
-            // 3. Capturar Precio
             let pasoPrecio = await capturarDatoVoz('Dí el PRECIO total');
             if (!pasoPrecio?.exito) return;
-            // Filtra el texto para dejar solo números y puntos
             insumoPrecio.value = pasoPrecio.texto.replace(/[^0-9.]/g, '');
             await sleep(400);
 
-            // 4. Capturar Cantidad
             let pasoCantidad = await capturarDatoVoz('Dí la CANTIDAD contada');
             if (!pasoCantidad?.exito) return;
             insumoCantidad.value = pasoCantidad.texto.replace(/[^0-9.]/g, '');
 
-            // Mensaje de éxito final
             Swal.fire({ icon: 'success', title: '¡Campos llenados!', timer: 1500, showConfirmButton: false });
         } catch (error) { 
             console.error("Error en el flujo de dictado:", error); 
         }
     }
 
-    // Inicialización de arranque seguro
+    // =========================================================================
+    // 🎛️ LÓGICA DE MONETIZACIÓN: CONTROL DE CANDADO PREMIUM & REDIRECCIÓN
+    // =========================================================================
+    const CONFIG_MONETIZACION = {
+        miTelefonoSoporte: "5212291915418", 
+        mensajeAviso: "¡Hola! Vengo de mi app Nexi Costos Suite y me gustaría recibir los detalles y métodos de pago para activar mi cuenta al Plan Premium y poder desbloquear mis cotizaciones automáticas. ✨📊"
+    };
+
+    function verificarYBloquearPorPlan() {
+        const esPlanPremiumNube = suscripcionUsuario && suscripcionUsuario.isPremium === true;
+        const esPlanPremiumLocal = localStorage.getItem('user_plan_status') === 'premium';
+        
+        const capaOverlay = document.getElementById('bloqueo-premium-layer');
+        const contenedorPadre = document.querySelector('.contenedor-bloque3-premium');
+
+        if (esPlanPremiumNube || esPlanPremiumLocal) {
+            contenedorPadre?.classList.add('es-premium');
+            capaOverlay?.classList.add('dynamic-hide');
+            if (capaOverlay) {
+                capaOverlay.style.display = 'none';
+            }
+        } else {
+            contenedorPadre?.classList.remove('es-premium');
+            capaOverlay?.classList.remove('dynamic-hide');
+            if (capaOverlay) {
+                capaOverlay.style.display = 'flex'; 
+            }
+        }
+    }
+
+    document.getElementById('btn-activar-premium')?.addEventListener('click', function() {
+        const enlaceWha = `https://api.whatsapp.com/send?phone=${CONFIG_MONETIZACION.miTelefonoSoporte}&text=${encodeURIComponent(CONFIG_MONETIZACION.mensajeAviso)}`;
+        window.open(enlaceWha, '_blank');
+        
+        configurarModulo();
+        verificarYBloquearPorPlan();
+    });
+
+    // ==========================================
+    // 💡 UNIFICACIÓN DE LOGICA TOOLTIPS
+    // ==========================================
+    document.addEventListener("click", (e) => {
+        const targetContainer = e.target.closest(".tooltip-container");
+
+        if (targetContainer) {
+            e.stopPropagation();
+            const wasActive = targetContainer.classList.contains("active");
+            const text = targetContainer.querySelector('.tooltip-text');
+            
+            document.querySelectorAll(".tooltip-container").forEach(el => {
+                el.classList.remove("active");
+                const t = el.querySelector('.tooltip-text');
+                if(t) { t.style.visibility = 'hidden'; t.style.opacity = '0'; }
+            });
+
+            if (!wasActive) {
+                targetContainer.classList.add("active");
+                if(text) { text.style.visibility = 'visible'; text.style.opacity = '1'; }
+            }
+        } else {
+            document.querySelectorAll(".tooltip-container").forEach(el => {
+                el.classList.remove("active");
+                const t = el.querySelector('.tooltip-text');
+                if(t) { t.style.visibility = 'hidden'; t.style.opacity = '0'; }
+            });
+        }
+    });
+
+    // ==========================================
+    // 🔥 EJECUCIÓN INICIAL (FIX)
+    // ==========================================
     configurarModulo();
+    verificarYBloquearPorPlan(); 
+    
 });
