@@ -71,6 +71,7 @@ header h1 span {
 
 .auth-buttons button {
     padding: 8px 24px;
+    margin-top: 10px;
     border-radius: 50px;
     font-size: 11px;
     text-transform: uppercase;
@@ -834,9 +835,13 @@ button#btn-dictar-voz {
 
 .swal2-actions-auth { display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 12px !important; width: 100% !important; margin-top: 20px !important; }
 
-/* =========================================================================
-   📺 RESPONSIVE MEDIA QUERIES OPTIMIZADAS (Flujo Vertical Completo)
-   ========================================================================= */
+/* --- 📺 RESPONSIVE MEDIA QUERIES OPTIMIZADAS (Flujo Vertical Completo) --- */
+
+@media (max-width: 599px) {
+    .banner-estatus {
+      font-size: 9px;
+    }
+}
 
 @media (min-width: 600px) {
     body { padding: 32px 24px; }
@@ -917,9 +922,7 @@ button#btn-dictar-voz {
     vertical-align: middle;
 }
 
-/* =========================================================================
-   ✨ MIGRACIÓN DE ESTILOS DESDE JAVASCRIPT & AJUSTES DE AIRE
-   ========================================================================= */
+/* --- ✨ MIGRACIÓN DE ESTILOS DESDE JAVASCRIPT & AJUSTES DE AIRE --- */
 
 /* Mensajes y Alertas de Verificación (Auth) */
 .auth-verificacion-p {
@@ -1255,9 +1258,7 @@ button#btn-dictar-voz {
     display: none !important;
 }
 
-/* =========================================================================
-   🛑 ARQUITECTURA DE ALERTAS Y JERARQUÍA TEXTUAL (JAPANDI MOBILE)
-   ========================================================================= */
+/* --- 🛑 ARQUITECTURA DE ALERTAS Y JERARQUÍA TEXTUAL (JAPANDI MOBILE) --- */
 
 /* 1. Forzar el estilo en el botón de confirmación (Mesa Vaciar y OK) */
 .swal2-popup .swal2-actions .swal2-confirm,
@@ -1381,21 +1382,11 @@ button.swal2-confirm:focus {
 }
 
 /* --- CAPA BASE DEL MODAL (OVERLAY) --- */
-.modal-config-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex; /* Se usa flex para centrar el contenido */
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    padding: 16px;
-    box-sizing: border-box;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+/* Asegúrate de que cuando tenga la clase 'hidden' realmente se oculte sin alterar el flujo */
+.modal-config-overlay.hidden {
+    display: none !important;
 }
+
 
 /* --- CLASE MAGICA PARA OCULTAR SIN FORZAMIENTOS --- */
 .modal-config-overlay.hidden {
@@ -1502,9 +1493,7 @@ button.swal2-confirm:focus {
     background-color: #3b3835;
 }
 
-/* =========================================================================
-   🏷️ ESTILOS PARA EL SELECTOR DINÁMICO DE MARCAS (TABLA INSUMOS)
-   ========================================================================= */
+/* --- 🏷️ ESTILOS PARA EL SELECTOR DINÁMICO DE MARCAS (TABLA INSUMOS) --- */
 
 /* Contenedor del selector dentro de la celda de Formato */
 .celda-formato-marca-select {
@@ -1569,9 +1558,7 @@ button.swal2-confirm:focus {
     background-color: transparent !important; /* Para que herede el fondo limpio de la fila */
 }
 
-/* ==========================================
-   SISTEMA DE TOOLTIPS NEXI - CARBÓN TRASLÚCIDO MIXTO
-   ========================================== */
+/* --- SISTEMA DE TOOLTIPS NEXI - CARBÓN TRASLÚCIDO MIXTO --- */
 
 html, body {
   max-width: 100% !important;
@@ -1902,9 +1889,7 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* =========================================================================
-   🛡️ ARQUITECTURA DE CAPAS (JERARQUÍA Z-INDEX OPTIMIZADA)
-   ========================================================================= */
+/* --- 🛡️ ARQUITECTURA DE CAPAS (JERARQUÍA Z-INDEX OPTIMIZADA) --- */
 
 /* SweetAlert2 se posiciona justo encima del overlay nativo (2000), sin romper la escala */
 .swal2-container {
@@ -1931,4 +1916,232 @@ html, body {
 .swal2-html-container select:focus {
     border-color: var(--japandi-accent) !important;
     box-shadow: 0 0 0 3px rgba(184, 142, 116, 0.08) !important;
+}
+
+/* --- 🧁 COMPONENTES PREMIUM DEL MODAL DE CARGAR RECETAS (JAPANDI ATELIER) --- */
+
+/* Fila contenedora del ítem y sus acciones rápidas */
+.premium-modal-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+/* Botón principal (Categoría o Receta) */
+.btn-premium-item-main {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background-color: #FCFAF6; /* Fondo harina ultra suave */
+    border: 1px solid var(--japandi-clay);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition-smooth);
+    min-width: 0; /* Previene desbordes extraños de texto largo */
+}
+
+.btn-premium-item-main:hover {
+    background-color: #FFFFFF;
+    border-color: var(--japandi-accent);
+    box-shadow: 0 4px 12px rgba(109, 96, 83, 0.04);
+}
+
+.btn-premium-item-main:active {
+    transform: scale(0.99);
+}
+
+/* Envoltura del título e ícono */
+.btn-premium-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--japandi-dark);
+    letter-spacing: 0.5px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Íconos de Lucide dentro del flujo Japandi */
+.icon-premium-folder {
+    color: var(--japandi-accent) !important;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.icon-premium-receta {
+    color: var(--japandi-muted) !important;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Badge contador de recetas */
+.badge-premium-count {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--japandi-muted);
+    background: rgba(230, 223, 211, 0.4); /* Arcilla tenue */
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Estructura meta interna para las recetas */
+.premium-receta-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    width: 100%;
+}
+
+.premium-receta-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--japandi-dark);
+}
+
+.premium-receta-cost {
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    color: var(--japandi-accent);
+    font-weight: 500;
+    padding-left: 28px; /* Alineación perfecta debajo del texto del nombre */
+}
+
+/* Botones de acción lateral (Mover, Borrar) */
+.btn-premium-action {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--japandi-clay);
+    background: #FCFAF6;
+    color: var(--japandi-wood);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    flex-shrink: 0;
+}
+
+.btn-premium-action svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+}
+
+/* Variación: Botón Mover */
+.btn-premium-action.move:hover {
+    background-color: #FFFFFF;
+    border-color: var(--japandi-accent);
+    color: var(--japandi-accent);
+}
+
+/* Variación: Botón Eliminar */
+.btn-premium-action.delete:hover {
+    background-color: #FDF9F8; /* Tono sutil rojizo orgánico */
+    border-color: #A95A4D;
+    color: #A95A4D;
+}
+
+.btn-premium-action:active {
+    transform: scale(0.95);
+}
+
+/* Botón Volver a Categorías (Estilo pie de modal) */
+.btn-premium-back {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--japandi-muted);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 0;
+    margin-top: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: var(--transition-smooth);
+}
+
+.btn-premium-back:hover {
+    color: var(--japandi-dark);
+}
+
+/* Estado de catálogo vacío */
+.modal-cargar-vacio {
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--japandi-muted);
+    font-style: italic;
+    padding: 24px 0;
+}
+
+/* Forzamos a que el modal maneje su propio scroll interno si es muy largo */
+.modal-config-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(35, 33, 31, 0.5);
+    display: flex;
+    align-items: center;     
+    justify-content: center;   
+    z-index: 1000;            
+    overflow-y: auto;         
+    padding: 20px;            
+    overscroll-behavior: contain; /* 👈 EVITA QUE EL SCROLL PASE AL FONDO */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ✨ SOLUCCIÓN: Evitar texto cortado en inputs de porcentaje y numéricos */
+.modal-config-body input[type="number"],
+.grupo-campo input,
+#input-porcentaje-anticipo {
+    height: 42px !important; /* Altura óptima para evitar cortes */
+    padding: 8px 12px !important;
+    line-height: 1.4 !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+}
+
+/* --- 🔒 Solución de scroll sin salto al header ---
+   No se usa height:100vh + overflow:hidden en el body (reinicia el scroll a 0).
+   En su lugar, el body se fija con position:fixed en el punto donde estaba el
+   scroll (el "top" negativo lo asigna app.js en bloquearScrollFondo()) y al
+   quitar la clase se restaura la posición exacta con window.scrollTo(). */
+body.modal-open-fix,
+body.no-scroll {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden;
+    touch-action: none; /* Evita que en móviles se pueda arrastrar el fondo */
 }

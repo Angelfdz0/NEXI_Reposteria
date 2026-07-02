@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexi Costos — Atelier Mobile</title>
+    <title>Nexi Reposteria - Cotizador Integral</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -18,13 +18,13 @@
 <body>
 
     <div id="banner-estatus" class="banner-estatus estado-local">
-        <span id="banner-texto">Demo (Local) • Actualiza tu plan para respaldar tus recetas</span>
+        <span id="banner-texto">Demo (Local) • Registrate para respaldar tus recetas</span>
     </div>
 
     <header>
-        <h1><span>Nexi Coster Suite</span>Atelier de Pastelería</h1>
+        <h1><span>Cotizador Integral</span>NEXI Reposteria</h1>
         <div class="auth-buttons">
-            <button type="button" id="btn-login-modal">Acceso Miembros</button>
+            <button type="button" id="btn-login-modal">Acceso / Registro</button>
             <button type="button" id="btn-cerrar-sesion" class="hidden">Cerrar Sesión</button>
         </div>
     </header>
@@ -34,20 +34,19 @@
         <section class="tarjeta">
             <div class="almacen-header">
                 <div class="almacen-header-flex">
-    <div>
-        <h2>
-            Almacén Integral
-            <span class="tooltip-container">
-                <span class="tooltip-icon">ⓘ</span>
-            <span class="tooltip-text">Visualiza, edita y controla el rendimiento, costos unitarios e inversión total de tus materias primas.</span>
-            </span>
-        </h2>
-    </div>
-    <button type="button" id="btn-dictar-voz" class="btn-icon" title="Dictar por voz">
-        <i data-lucide="mic"></i>
-    </button>
-</div>
-
+                    <div>
+                        <h2>
+                            Almacén Integral
+                            <span class="tooltip-container">
+                                <span class="tooltip-icon">ⓘ</span>
+                                <span class="tooltip-text">Visualiza, edita y controla el rendimiento, costos unitarios e inversión total de tus materias primas.</span>
+                            </span>
+                        </h2>
+                    </div>
+                    <button type="button" id="btn-dictar-voz" class="btn-icon" title="Dictar por voz">
+                        <i data-lucide="mic"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="tabs">
@@ -121,14 +120,14 @@
         </section>
         
         <section class="tarjeta">
-          <div class="tarjeta-seccion-header">
-        <h2> 02. Mesa de Ingredientes
-        <span class="tooltip-container">
-            <span class="tooltip-icon">ⓘ</span>
-            <span class="tooltip-text">Digita y pesa las materias primas de tu receta para calcular sus costos netos automáticamente.</span>
-        </span>
-    </h2>
-</div>
+            <div class="tarjeta-seccion-header">
+                <h2> 02. Mesa de Ingredientes
+                    <span class="tooltip-container">
+                        <span class="tooltip-icon">ⓘ</span>
+                        <span class="tooltip-text">Digita y pesa las materias primas de tu receta para calcular sus costos netos automáticamente.</span>
+                    </span>
+                </h2>
+            </div>
 
             <form id="form-receta">
                 <div class="buscador-wrapper">
@@ -177,15 +176,15 @@
         </section>
 
         <section class="tarjeta tarjeta-analisis-costo">
-    <div class="tarjeta-seccion-header">
-    <h2>
-        03. Análisis de Costo
-        <span class="tooltip-container">
-            <span class="tooltip-icon">ⓘ</span>
-            <span class="tooltip-text">Resumen financiero automatizado que calcula tus costos de producción, logística, mano de obra y precio de venta final.</span>
-        </span>
-    </h2>
-</div>
+            <div class="tarjeta-seccion-header">
+                <h2>
+                    03. Análisis de Costo
+                    <span class="tooltip-container">
+                        <span class="tooltip-icon">ⓘ</span>
+                        <span class="tooltip-text">Resumen financiero automatizado que calcula tus costos de producción, logística, mano de obra y precio de venta final.</span>
+                    </span>
+                </h2>
+            </div>
 
             <button type="button" id="btn-abrir-config" class="btn-config-trigger">
                 <i data-lucide="sliders"></i> Ajustar Parámetros Comerciales
@@ -271,7 +270,7 @@
                     </div>
                     <div class="fila-resumen sub-inciso destacado-rebanada">
                         <span>
-                            Sugerido por Rebanada al Público:
+                        Rebanada al Público:
                             <span class="tooltip-container">
                                 <span class="tooltip-icon">ⓘ</span>
                                 <span class="tooltip-text">El valor comercial óptimo que debe tener cada porción si decides vender tu pieza por rebanadas individuales.</span>
@@ -289,108 +288,108 @@
         </section>
 
         <div id="modal-config" class="modal-config-overlay hidden">
-    <div class="modal-config-contenido">
-        
-        <div class="modal-config-header">
-            <h3>Configuración Comercial</h3>
-            <button type="button" id="btn-cerrar-config" class="btn-modal-close">&times;</button>
+            <div class="modal-config-contenido">
+
+                <div class="modal-config-header">
+                    <h3>Configuración Comercial</h3>
+                    <button type="button" id="btn-cerrar-config" class="btn-modal-close">&times;</button>
+                </div>
+
+                <div class="modal-config-body">
+                    <div class="modal-config-seccion">
+                        <span class="modal-seccion-titulo">🧑‍🍳 MANO DE OBRA Y TIEMPO</span>
+                        <div class="modal-config-row">
+                            <span>
+                                Pago por Hora ($):
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">El valor monetario estimado que asignas a una hora de tu trabajo artesanal o el de tu personal.</span>
+                                </span>
+                            </span>
+                            <input type="number" id="input-mano-obra" value="0" min="0" oninput="calcularCostosPorRebanada()">
+                        </div>
+                        <div class="modal-config-row">
+                            <span>
+                                Complejidad del Proyecto:
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">Define las horas automáticas sugeridas según la dificultad de preparación, horneado y ensamble de la pieza.</span>
+                                </span>
+                            </span>
+                            <select id="select-dificultad" onchange="calcularCostosPorRebanada()">
+                                <option value="facil">Fácil (1h)</option>
+                                <option value="medio">Medio (2.5h)</option>
+                                <option value="dificil">Difícil (4h)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-config-seccion divisor-top">
+                        <span class="modal-seccion-titulo">🚗 LOGÍSTICA Y DELIVERY</span>
+                        <div class="modal-config-row">
+                            <span>
+                                Distancia (Ida en Km):
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">Kilómetros totales desde tu taller hasta el destino de entrega del cliente. El sistema calculará el viaje redondo.</span>
+                                </span>
+                            </span>
+                            <input type="number" id="input-distancia" value="0" min="0" oninput="calcularCostosPorRebanada()">
+                        </div>
+                        <div class="modal-config-row">
+                            <span>
+                                Precio Gasolina por Litro ($):
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">Costo de combustible actual en tu zona geográfica para realizar un cálculo logístico preciso.</span>
+                                </span>
+                            </span>
+                            <input type="number" id="input-gasolina" value="0" min="0" step="any" oninput="calcularCostosPorRebanada()">
+                        </div>
+                        <div class="modal-config-row">
+                            <span>
+                                Vehículo de Traslado:
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">Afecta el rendimiento estimado de combustible (los kilómetros por litro que rinde cada motor).</span>
+                                </span>
+                            </span>
+                            <select id="select-vehiculo" onchange="calcularCostosPorRebanada()">
+                                <option value="sedan">Sedán</option>
+                                <option value="suv">Camioneta / SUV</option>
+                                <option value="moto">Motocicleta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-config-seccion divisor-top">
+                        <span class="modal-seccion-titulo">📈 RENDIMIENTO Y UTILIDAD</span>
+                        <div class="modal-config-row">
+                            <span>
+                                Dividir en Porciones:
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">Cantidad total de rebanadas estándar que rinde esta receta completa. Sirve para desglosar el costo unitario.</span>
+                                </span>
+                            </span>
+                            <input type="number" id="input-porciones" value="12" min="1" oninput="calcularCostosPorRebanada()">
+                        </div>
+                        <div class="modal-config-row">
+                            <span>
+                                Margen de Utilidad (%):
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">ⓘ</span>
+                                    <span class="tooltip-text">El porcentaje de ganancia neta que deseas obtener sobre el costo de producción total del producto.</span>
+                                </span>
+                            </span>
+                            <input type="number" id="input-margen-utilidad" value="30" min="1" max="99" oninput="calcularCostosPorRebanada()">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="btn-guardar-config" class="btn-modal-save">Listo, aplicar cambios</button>
+            </div>
         </div>
-
-        <div class="modal-config-body">
-            <div class="modal-config-seccion">
-                <span class="modal-seccion-titulo">🧑‍🍳 MANO DE OBRA Y TIEMPO</span>
-                <div class="modal-config-row">
-                    <span>
-                        Pago por Hora ($):
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">El valor monetario estimado que asignas a una hora de tu trabajo artesanal o el de tu personal.</span>
-                        </span>
-                    </span>
-                    <input type="number" id="input-mano-obra" value="0" min="0" oninput="calcularCostosPorRebanada()">
-                </div>
-                <div class="modal-config-row">
-                    <span>
-                        Complejidad del Proyecto:
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">Define las horas automáticas sugeridas según la dificultad de preparación, horneado y ensamble de la pieza.</span>
-                        </span>
-                    </span>
-                    <select id="select-dificultad" onchange="calcularCostosPorRebanada()">
-                        <option value="facil">Fácil (1h)</option>
-                        <option value="medio">Medio (2.5h)</option>
-                        <option value="dificil">Difícil (4h)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="modal-config-seccion divisor-top">
-                <span class="modal-seccion-titulo">🚗 LOGÍSTICA Y DELIVERY</span>
-                <div class="modal-config-row">
-                    <span>
-                        Distancia (Ida en Km):
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">Kilómetros totales desde tu taller hasta el destino de entrega del cliente. El sistema calculará el viaje redondo.</span>
-                        </span>
-                    </span>
-                    <input type="number" id="input-distancia" value="0" min="0" oninput="calcularCostosPorRebanada()">
-                </div>
-                <div class="modal-config-row">
-                    <span>
-                        Precio Gasolina por Litro ($):
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">Costo de combustible actual en tu zona geográfica para realizar un cálculo logístico preciso.</span>
-                        </span>
-                    </span>
-                    <input type="number" id="input-gasolina" value="0" min="0" step="any" oninput="calcularCostosPorRebanada()">
-                </div>
-                <div class="modal-config-row">
-                    <span>
-                        Vehículo de Traslado:
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">Afecta el rendimiento estimado de combustible (los kilómetros por litro que rinde cada motor).</span>
-                        </span>
-                    </span>
-                    <select id="select-vehiculo" onchange="calcularCostosPorRebanada()">
-                        <option value="sedan">Sedán</option>
-                        <option value="suv">Camioneta / SUV</option>
-                        <option value="moto">Motocicleta</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="modal-config-seccion divisor-top">
-                <span class="modal-seccion-titulo">📈 RENDIMIENTO Y UTILIDAD</span>
-                <div class="modal-config-row">
-                    <span>
-                        Dividir en Porciones:
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">Cantidad total de rebanadas estándar que rinde esta receta completa. Sirve para desglosar el costo unitario.</span>
-                        </span>
-                    </span>
-                    <input type="number" id="input-porciones" value="12" min="1" oninput="calcularCostosPorRebanada()">
-                </div>
-                <div class="modal-config-row">
-                    <span>
-                        Margen de Utilidad (%):
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">ⓘ</span>
-                            <span class="tooltip-text">El porcentaje de ganancia neta que deseas obtener sobre el costo de producción total del producto.</span>
-                        </span>
-                    </span>
-                    <input type="number" id="input-margen-utilidad" value="30" min="1" max="99" oninput="calcularCostosPorRebanada()">
-                </div>
-            </div>
-        </div>
-
-        <button type="button" id="btn-guardar-config" class="btn-modal-save">Listo, aplicar cambios</button>
-    </div>
-</div>
 
         <div id="modal-guardar-formula" class="modal-config-overlay hidden">
             <div class="modal-config-contenido" style="max-width: 400px;">
